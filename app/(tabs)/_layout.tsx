@@ -1,45 +1,51 @@
-import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Home  from './Home';
+import Search  from './Search';
+import Favorites from './Favorites';
+import Details from './Details';
+import Profile from './Profile';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+const Stack = createNativeStackNavigator();
+const Tab   = createBottomTabNavigator();
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+function TabNavigator() {
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
+        tabBarIcon: ({ color, size }) => {
+          let iconName = 'home';
+          if (route.name === 'Search') iconName = 'search';
+          if (route.name === 'Favorites') iconName = 'heart';
+          if (route.name === 'Profile') iconName = 'person';
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Home"      component={Home} />
+      <Tab.Screen name="Search"    component={Search} />
+      <Tab.Screen name="Favorites" component={Favorites} />
+      <Tab.Screen name="Profile"   component={Profile} />
+    </Tab.Navigator>
+  );
+}
+
+export default function MainNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="HomeTabs"
+        component={TabNavigator}
+        options={{ headerShown: false }}
       />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
+      <Stack.Screen
+        name="PropertyDetails"
+        component={Details}
+        options={{ title: 'Property Details' }}
       />
-    </Tabs>
+    </Stack.Navigator>
   );
 }
