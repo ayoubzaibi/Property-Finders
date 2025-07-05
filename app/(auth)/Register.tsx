@@ -1,30 +1,64 @@
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import React, { useState } from 'react';
-import { ActivityIndicator, Dimensions, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { auth } from '../config/firebase';
 
 const { width, height } = Dimensions.get('window');
 
-export default function Login() {
+export default function Register() {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [displayName, setDisplayName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleLogin = async () => {
+    const handleRegister = async () => {
         setError(null);
-        if (!email || !password) {
-            setError('Please fill in both fields.');
+        
+        // Validation
+        if (!email || !password || !confirmPassword || !displayName) {
+            setError('Please fill in all fields.');
             return;
         }
+
+        if (password !== confirmPassword) {
+            setError('Passwords do not match.');
+            return;
+        }
+
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters.');
+            return;
+        }
+
         setLoading(true);
         try {
-            await signInWithEmailAndPassword(auth, email.trim(), password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+            
+            // Update profile with display name
+            await updateProfile(userCredential.user, {
+                displayName: displayName.trim()
+            });
+
+            Alert.alert('Success', 'Account created successfully!', [
+                { text: 'OK', onPress: () => navigation.navigate('HomeTabs' as never) }
+            ]);
         } catch (e: any) {
-            setError(e.message);
+            let errorMessage = 'Registration failed.';
+            
+            if (e.code === 'auth/email-already-in-use') {
+                errorMessage = 'Email is already registered.';
+            } else if (e.code === 'auth/invalid-email') {
+                errorMessage = 'Invalid email address.';
+            } else if (e.code === 'auth/weak-password') {
+                errorMessage = 'Password is too weak.';
+            }
+            
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -50,8 +84,8 @@ export default function Login() {
                                 <View style={styles.logoContainer}>
                                     <Text style={styles.logoIcon}>🏠</Text>
                                 </View>
-                                <Text style={styles.title}>Welcome Back</Text>
-                                <Text style={styles.subtitle}>Sign in to continue your property search</Text>
+                                <Text style={styles.title}>Create Account</Text>
+                                <Text style={styles.subtitle}>Join Property Finder and start your journey</Text>
                             </View>
 
                             {/* Form Section */}
@@ -61,6 +95,18 @@ export default function Login() {
                                         <Text style={styles.errorText}>{error}</Text>
                                     </View>
                                 ) : null}
+
+                                <View style={styles.inputContainer}>
+                                    <Text style={styles.inputLabel}>Full Name</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Enter your full name"
+                                        placeholderTextColor="#999"
+                                        value={displayName}
+                                        onChangeText={setDisplayName}
+                                        autoCapitalize="words"
+                                    />
+                                </View>
 
                                 <View style={styles.inputContainer}>
                                     <Text style={styles.inputLabel}>Email Address</Text>
@@ -79,7 +125,7 @@ export default function Login() {
                                     <Text style={styles.inputLabel}>Password</Text>
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Enter your password"
+                                        placeholder="Create a password"
                                         placeholderTextColor="#999"
                                         secureTextEntry
                                         value={password}
@@ -87,20 +133,28 @@ export default function Login() {
                                     />
                                 </View>
 
+                                <View style={styles.inputContainer}>
+                                    <Text style={styles.inputLabel}>Confirm Password</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Confirm your password"
+                                        placeholderTextColor="#999"
+                                        secureTextEntry
+                                        value={confirmPassword}
+                                        onChangeText={setConfirmPassword}
+                                    />
+                                </View>
+
                                 <TouchableOpacity
-                                    style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-                                    onPress={handleLogin}
+                                    style={[styles.registerButton, loading && styles.registerButtonDisabled]}
+                                    onPress={handleRegister}
                                     disabled={loading}
                                 >
                                     {loading ? (
                                         <ActivityIndicator color="#fff" size="small" />
                                     ) : (
-                                        <Text style={styles.loginButtonText}>Sign In</Text>
+                                        <Text style={styles.registerButtonText}>Create Account</Text>
                                     )}
-                                </TouchableOpacity>
-
-                                <TouchableOpacity style={styles.forgotPassword}>
-                                    <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                                 </TouchableOpacity>
                             </View>
 
@@ -112,10 +166,10 @@ export default function Login() {
                                     <View style={styles.dividerLine} />
                                 </View>
 
-                                <View style={styles.signupContainer}>
-                                    <Text style={styles.signupText}>Don't have an account? </Text>
-                                    <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
-                                        <Text style={styles.signupLink}>Sign Up</Text>
+                                <View style={styles.loginContainer}>
+                                    <Text style={styles.loginText}>Already have an account? </Text>
+                                    <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
+                                        <Text style={styles.loginLink}>Sign In</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -144,7 +198,7 @@ const styles = StyleSheet.create({
     },
     headerSection: {
         alignItems: 'center',
-        marginBottom: 50,
+        marginBottom: 40,
     },
     logoContainer: {
         width: 80,
@@ -172,7 +226,7 @@ const styles = StyleSheet.create({
         lineHeight: 22,
     },
     formSection: {
-        marginBottom: 40,
+        marginBottom: 30,
     },
     errorContainer: {
         backgroundColor: 'rgba(231, 76, 60, 0.1)',
@@ -188,7 +242,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     inputContainer: {
-        marginBottom: 20,
+        marginBottom: 15,
     },
     inputLabel: {
         fontSize: 16,
@@ -206,7 +260,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.3)',
     },
-    loginButton: {
+    registerButton: {
         backgroundColor: '#fff',
         height: 55,
         borderRadius: 12,
@@ -219,22 +273,13 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 5,
     },
-    loginButtonDisabled: {
+    registerButtonDisabled: {
         opacity: 0.7,
     },
-    loginButtonText: {
+    registerButtonText: {
         color: '#667eea',
         fontSize: 18,
         fontWeight: '700',
-    },
-    forgotPassword: {
-        alignItems: 'center',
-        marginTop: 20,
-    },
-    forgotPasswordText: {
-        color: 'rgba(255,255,255,0.8)',
-        fontSize: 14,
-        textDecorationLine: 'underline',
     },
     footerSection: {
         alignItems: 'center',
@@ -255,18 +300,18 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginHorizontal: 15,
     },
-    signupContainer: {
+    loginContainer: {
         flexDirection: 'row',
         alignItems: 'center',
     },
-    signupText: {
+    loginText: {
         color: 'rgba(255,255,255,0.8)',
         fontSize: 16,
     },
-    signupLink: {
+    loginLink: {
         color: '#fff',
         fontSize: 16,
         fontWeight: '700',
         textDecorationLine: 'underline',
     },
-});
+}); 
