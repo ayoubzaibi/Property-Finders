@@ -1,12 +1,10 @@
+import { useNavigation } from '@react-navigation/native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { auth } from '../config/firebase';
 
-import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-
-import { useNavigation } from '@react-navigation/native';
-
-export default function LoginScreen() {
+export default function Login() {
     const navigation = useNavigation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -28,6 +26,7 @@ export default function LoginScreen() {
             setLoading(false);
         }
     };
+
 
     return (
         <KeyboardAvoidingView
@@ -73,7 +72,7 @@ export default function LoginScreen() {
 
                         <View style={styles.footer}>
                             <Text style={styles.footerText}>New here?</Text>
-                            <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
+                            <TouchableOpacity onPress={() => navigation.navigate('SignUp' as never)}>
                                 <Text style={[styles.footerText, styles.linkText]}> Sign Up</Text>
                             </TouchableOpacity>
                         </View>

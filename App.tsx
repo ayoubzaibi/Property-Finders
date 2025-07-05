@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer }        from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { onAuthStateChanged, User }  from 'firebase/auth';
-import { auth }                      from './app/config/firebase';
+import { auth }   from './app/config/firebase';
 import MainNavigator from './app/(tabs)/_layout';
 import AuthNavigator from './app/(auth)/_layout';
 
@@ -15,9 +15,9 @@ export default function App() {
       if (initializing) setInit(false);
     });
     return unsub;
-  },);
+  }, [initializing]);
 
-  if (initializing) return null; // or your splash
+  if (initializing) return null; 
 
   return (
     <NavigationContainer>
