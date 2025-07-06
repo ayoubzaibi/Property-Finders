@@ -2,13 +2,15 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
-import { ActivityIndicator, Dimensions, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { useAuth } from '../../services/authContext';
 import { auth } from '../config/firebase';
 
 const { width, height } = Dimensions.get('window');
 
 export default function Login() {
     const navigation = useNavigation();
+    const { setUser } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -22,9 +24,45 @@ export default function Login() {
         }
         setLoading(true);
         try {
-            await signInWithEmailAndPassword(auth, email.trim(), password);
+            console.log('=== LOGIN PROCESS START ===');
+            console.log('Attempting login with:', email.trim());
+            const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+            console.log('Login successful:', userCredential.user.email);
+            
+            console.log('Setting user in auth context...');
+            setUser(userCredential.user);
+            console.log('User set in auth context, should trigger navigation');
+            
+            Alert.alert('Success', 'Login successful!', [
+                {
+                    text: 'OK',
+                    onPress: () => {
+                        console.log('=== LOGIN PROCESS END ===');
+                        console.log('Login completed, navigation should be triggered');
+                        console.log('Current auth state:', auth.currentUser?.email);
+                    }
+                }
+            ]);
+            
         } catch (e: any) {
-            setError(e.message);
+            console.error('Login error:', e.code, e.message);
+            let errorMessage = 'Login failed.';
+            
+            if (e.code === 'auth/user-not-found') {
+                errorMessage = 'No account found with this email.';
+            } else if (e.code === 'auth/wrong-password') {
+                errorMessage = 'Incorrect password.';
+            } else if (e.code === 'auth/invalid-email') {
+                errorMessage = 'Invalid email address.';
+            } else if (e.code === 'auth/too-many-requests') {
+                errorMessage = 'Too many failed attempts. Please try again later.';
+            } else if (e.code === 'auth/network-request-failed') {
+                errorMessage = 'Network error. Please check your connection.';
+            } else {
+                errorMessage = e.message || 'Login failed. Please try again.';
+            }
+            
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -45,7 +83,6 @@ export default function Login() {
                 >
                     <View style={styles.overlay}>
                         <View style={styles.content}>
-                            {/* Header Section */}
                             <View style={styles.headerSection}>
                                 <View style={styles.logoContainer}>
                                     <Text style={styles.logoIcon}>🏠</Text>
@@ -54,7 +91,6 @@ export default function Login() {
                                 <Text style={styles.subtitle}>Sign in to continue your property search</Text>
                             </View>
 
-                            {/* Form Section */}
                             <View style={styles.formSection}>
                                 {error ? (
                                     <View style={styles.errorContainer}>
@@ -104,7 +140,6 @@ export default function Login() {
                                 </TouchableOpacity>
                             </View>
 
-                            {/* Footer Section */}
                             <View style={styles.footerSection}>
                                 <View style={styles.divider}>
                                     <View style={styles.dividerLine} />
@@ -113,7 +148,7 @@ export default function Login() {
                                 </View>
 
                                 <View style={styles.signupContainer}>
-                                    <Text style={styles.signupText}>Don't have an account? </Text>
+                                    <Text style={styles.signupText}>Don&apos;t have an account? </Text>
                                     <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
                                         <Text style={styles.signupLink}>Sign Up</Text>
                                     </TouchableOpacity>
@@ -170,6 +205,22 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.8)',
         textAlign: 'center',
         lineHeight: 22,
+    },
+    divider: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 30,
+        width: '100%',
+    },
+    dividerLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: 'rgba(255,255,255,0.3)',
+    },
+    dividerText: {
+        color: 'rgba(255,255,255,0.6)',
+        fontSize: 14,
+        marginHorizontal: 15,
     },
     formSection: {
         marginBottom: 40,
@@ -238,22 +289,6 @@ const styles = StyleSheet.create({
     },
     footerSection: {
         alignItems: 'center',
-    },
-    divider: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 30,
-        width: '100%',
-    },
-    dividerLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: 'rgba(255,255,255,0.3)',
-    },
-    dividerText: {
-        color: 'rgba(255,255,255,0.6)',
-        fontSize: 14,
-        marginHorizontal: 15,
     },
     signupContainer: {
         flexDirection: 'row',

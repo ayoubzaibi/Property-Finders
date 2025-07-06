@@ -1,12 +1,12 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Home  from './Home';
-import Search  from './Search';
-import Favorites from './Favorites';
-import Details from './Details';
-import Profile from './Profile';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Details from './Details';
+import Favorites from './Favorites';
+import Home from './Home';
+import Profile from './Profile';
+import Search from './Search';
 
 const Stack = createNativeStackNavigator();
 const Tab   = createBottomTabNavigator();

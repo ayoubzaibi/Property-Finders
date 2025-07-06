@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator,} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { auth, db } from '../config/firebase';
-import { collection, query, where, onSnapshot, DocumentData,} from 'firebase/firestore';
+import { collection, DocumentData, onSnapshot, query, where, } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View, } from 'react-native';
+import { useAuth } from '../../services/authContext';
+import { db } from '../config/firebase';
 
 export type Property = {
   id: string;
@@ -17,16 +18,21 @@ export type Property = {
 
 export default function FavoritesScreen() {
   const navigation = useNavigation<any>();
+  const { user } = useAuth();
   const [favorites, setFavorites] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
+    if (!user?.uid) {
+      setLoading(false);
+      return;
+    }
+
+    console.log('Loading favorites for user:', user.email);
 
     const q = query(
       collection(db, 'favorites'),
-      where('userId', '==', uid)
+      where('userId', '==', user.uid)
     );
 
     const unsubscribe = onSnapshot(q, snapshot => {
@@ -37,10 +43,14 @@ export default function FavoritesScreen() {
       });
       setFavorites(items);
       setLoading(false);
+      console.log('Favorites loaded:', items.length);
+    }, (error) => {
+      console.error('Error loading favorites:', error);
+      setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user?.uid]);
 
   const renderItem = ({ item }: { item: Property }) => (
     <TouchableOpacity
@@ -56,6 +66,14 @@ export default function FavoritesScreen() {
 
   if (loading) {
     return <ActivityIndicator style={{ flex: 1 }} size="large" />;
+  }
+
+  if (!user) {
+    return (
+      <View style={styles.empty}>
+        <Text style={styles.emptyText}>Please log in to view favorites.</Text>
+      </View>
+    );
   }
 
   if (!favorites.length) {

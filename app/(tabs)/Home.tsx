@@ -2,7 +2,6 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, Dimensions, FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { addToFavorites } from '../../store/slices/favoritesSlice';
 import { fetchProperties, Property } from '../../store/slices/propertiesSlice';
 
 
@@ -44,9 +43,6 @@ export default function HomeScreen() {
     }));
   };
 
-  const handleFavorite = (property: Property) => {
-    dispatch(addToFavorites(property));
-  };
 
   const renderItem = ({ item }: { item: Property }) => (
     <TouchableOpacity

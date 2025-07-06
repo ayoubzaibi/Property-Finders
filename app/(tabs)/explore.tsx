@@ -1,5 +1,6 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Platform, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { useAuth } from '../../services/authContext';
 
 import { Collapsible } from '@/components/Collapsible';
 import { ExternalLink } from '@/components/ExternalLink';
@@ -8,86 +9,94 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
-export default function TabTwoScreen() {
+export default function ExploreScreen() {
+  const navigation = useNavigation();
+  const { user } = useAuth();
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+      headerBackgroundColor={{ light: '#667eea', dark: '#764ba2' }}
       headerImage={
         <IconSymbol
           size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
+          color="#fff"
+          name="house.fill"
           style={styles.headerImage}
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
+        <ThemedText type="title">Property Explorer</ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
+      
+      {user && (
+        <ThemedText style={styles.welcomeText}>
+          Welcome back, {user.displayName || user.email}!
         </ThemedText>
+      )}
+
+      <ThemedText>Discover amazing properties and find your perfect home.</ThemedText>
+      
+      <Collapsible title="Property Search">
         <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
+          Use the <ThemedText type="defaultSemiBold">Search</ThemedText> tab to find properties with advanced filters including location, price range, property type, and amenities.
         </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
+        <TouchableOpacity 
+          style={styles.navigationButton}
+          onPress={() => navigation.navigate('Search' as never)}
+        >
+          <Text style={styles.buttonText}>Go to Search</Text>
+        </TouchableOpacity>
+      </Collapsible>
+
+      <Collapsible title="Favorites">
+        <ThemedText>
+          Save your favorite properties in the <ThemedText type="defaultSemiBold">Favorites</ThemedText> tab to easily access them later.
+        </ThemedText>
+        <TouchableOpacity 
+          style={styles.navigationButton}
+          onPress={() => navigation.navigate('Favorites' as never)}
+        >
+          <Text style={styles.buttonText}>View Favorites</Text>
+        </TouchableOpacity>
+      </Collapsible>
+
+      <Collapsible title="Property Details">
+        <ThemedText>
+          Tap on any property to view detailed information including photos, amenities, and rent estimates.
+        </ThemedText>
+      </Collapsible>
+
+      <Collapsible title="Real-time Data">
+        <ThemedText>
+          Our app uses the RentCast API to provide real-time property data and accurate rent estimates for your area.
+        </ThemedText>
+        <ExternalLink href="https://www.rentcast.io/">
+          <ThemedText type="link">Learn more about RentCast</ThemedText>
         </ExternalLink>
       </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
+
+      <Collapsible title="Firebase Authentication">
         <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
+          Secure authentication powered by Firebase. Your data is safely stored and synced across devices.
         </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
+        <ExternalLink href="https://firebase.google.com/docs/auth">
+          <ThemedText type="link">Learn more about Firebase Auth</ThemedText>
         </ExternalLink>
       </Collapsible>
-      <Collapsible title="Custom fonts">
+
+      <Collapsible title="Cross-Platform Support">
         <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
+          This app works seamlessly on Android, iOS, and web platforms. Built with React Native and Expo for maximum compatibility.
         </ThemedText>
         {Platform.select({
           ios: (
             <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
+              You're currently using the iOS version with native performance optimizations.
+            </ThemedText>
+          ),
+          android: (
+            <ThemedText>
+              You're currently using the Android version with native performance optimizations.
             </ThemedText>
           ),
         })}
@@ -98,7 +107,7 @@ export default function TabTwoScreen() {
 
 const styles = StyleSheet.create({
   headerImage: {
-    color: '#808080',
+    color: '#fff',
     bottom: -90,
     left: -35,
     position: 'absolute',
@@ -106,5 +115,23 @@ const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: 'row',
     gap: 8,
+  },
+  welcomeText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: '#667eea',
+    fontWeight: '600',
+  },
+  navigationButton: {
+    backgroundColor: '#667eea',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 10,
+    alignSelf: 'flex-start',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });

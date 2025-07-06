@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { convertRentCastToProperty, rentcastAPI, RentCastSearchParams } from '../../services/rentcastApi';
 
 export interface Property {
   id: string;
@@ -60,118 +61,81 @@ const initialState: PropertiesState = {
   searchHistory: [],
 };
 
-// Mock API call - replace with RentCast API
+// Convert search filters to RentCast API parameters
+function convertFiltersToRentCastParams(filters: SearchFilters): RentCastSearchParams {
+  const params: RentCastSearchParams = {
+    limit: 20, // Limit results for better performance
+  };
+
+  if (filters.location) {
+    // Try to extract city and state from location string
+    const locationParts = filters.location.split(',').map(part => part.trim());
+    if (locationParts.length >= 2) {
+      params.city = locationParts[0];
+      params.state = locationParts[1];
+    } else {
+      params.city = filters.location;
+    }
+  }
+
+  if (filters.minPrice > 0) {
+    params.minPrice = filters.minPrice;
+  }
+
+  if (filters.maxPrice < Infinity) {
+    params.maxPrice = filters.maxPrice;
+  }
+
+  if (filters.minBedrooms > 0) {
+    params.bedrooms = filters.minBedrooms;
+  }
+
+  if (filters.minBathrooms > 0) {
+    params.bathrooms = filters.minBathrooms;
+  }
+
+  if (filters.propertyType) {
+    params.propertyType = filters.propertyType;
+  }
+
+  return params;
+}
+
+// Fetch properties from RentCast API
 export const fetchProperties = createAsyncThunk(
   'properties/fetchProperties',
   async (filters: SearchFilters) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock data - replace with actual API call
-    const mockProperties: Property[] = [
-      {
-        id: '1',
-        price: 350000,
-        address: '123 Main St, Springfield',
-        propertyType: 'House',
-        bedrooms: 3,
-        bathrooms: 2,
-        size: 1800,
-        yearBuilt: 2010,
-        amenities: ['Pool', 'Garden', 'Garage'],
-        photos: [
-          'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop',
-          'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&h=300&fit=crop',
-        ],
-        description: 'Beautiful family home with modern amenities',
-        location: { latitude: 37.7749, longitude: -122.4194 },
-        neighborhood: 'Downtown',
-        parking: true,
-        pool: true,
-        garden: true,
-      },
-      {
-        id: '2',
-        price: 450000,
-        address: '456 Elm St, Shelbyville',
-        propertyType: 'Apartment',
-        bedrooms: 2,
-        bathrooms: 1,
-        size: 1200,
-        yearBuilt: 2015,
-        amenities: ['Gym', 'Balcony', 'Parking'],
-        photos: [
-          'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop',
-          'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop',
-        ],
-        description: 'Modern apartment in prime location',
-        location: { latitude: 37.7849, longitude: -122.4094 },
-        neighborhood: 'Uptown',
-        parking: true,
-        gym: true,
-        balcony: true,
-      },
-      {
-        id: '3',
-        price: 280000,
-        address: '789 Oak Ave, Capital City',
-        propertyType: 'Condo',
-        bedrooms: 1,
-        bathrooms: 1,
-        size: 800,
-        yearBuilt: 2018,
-        amenities: ['Gym', 'Pool', 'Security'],
-        photos: [
-          'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400&h=300&fit=crop',
-          'https://images.unsplash.com/photo-1560448075-bb485b067938?w=400&h=300&fit=crop',
-        ],
-        description: 'Cozy condo perfect for first-time buyers',
-        location: { latitude: 37.7649, longitude: -122.4294 },
-        neighborhood: 'Midtown',
-        gym: true,
-        pool: true,
-      },
-    ];
+    try {
+      console.log('Fetching properties with filters:', filters);
+      
+      // Convert our filters to RentCast API parameters
+      const rentcastParams = convertFiltersToRentCastParams(filters);
+      console.log('RentCast API parameters:', rentcastParams);
 
-    // Apply filters
-    let filtered = mockProperties;
-    
-    if (filters.location) {
-      filtered = filtered.filter(p => 
-        p.address.toLowerCase().includes(filters.location.toLowerCase()) ||
-        p.neighborhood?.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-    
-    if (filters.minPrice > 0) {
-      filtered = filtered.filter(p => p.price >= filters.minPrice);
-    }
-    
-    if (filters.maxPrice < Infinity) {
-      filtered = filtered.filter(p => p.price <= filters.maxPrice);
-    }
-    
-    if (filters.propertyType) {
-      filtered = filtered.filter(p => p.propertyType === filters.propertyType);
-    }
-    
-    if (filters.minBedrooms > 0) {
-      filtered = filtered.filter(p => p.bedrooms >= filters.minBedrooms);
-    }
-    
-    if (filters.minBathrooms > 0) {
-      filtered = filtered.filter(p => p.bathrooms >= filters.minBathrooms);
-    }
-    
-    if (filters.amenities.length > 0) {
-      filtered = filtered.filter(p => 
-        filters.amenities.every(amenity => 
-          p.amenities.some(a => a.toLowerCase().includes(amenity.toLowerCase()))
-        )
-      );
-    }
+      // Fetch properties from RentCast API
+      const rentcastProperties = await rentcastAPI.searchProperties(rentcastParams);
+      console.log('RentCast properties received:', rentcastProperties.length);
 
-    return filtered;
+      // Convert RentCast properties to our Property format
+      const properties: Property[] = rentcastProperties.map(convertRentCastToProperty);
+      console.log('Converted properties:', properties.length);
+
+      // Apply additional client-side filtering for amenities
+      let filteredProperties = properties;
+      
+      if (filters.amenities.length > 0) {
+        filteredProperties = properties.filter(property => 
+          filters.amenities.every(amenity => 
+            property.amenities.some(a => a.toLowerCase().includes(amenity.toLowerCase()))
+          )
+        );
+      }
+
+      return filteredProperties;
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      throw error;
+    }
   }
 );
 
@@ -195,6 +159,10 @@ const propertiesSlice = createSlice({
     setFilteredProperties: (state, action: PayloadAction<Property[]>) => {
       state.filteredProperties = action.payload;
     },
+    clearProperties: (state) => {
+      state.properties = [];
+      state.filteredProperties = [];
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -206,10 +174,12 @@ const propertiesSlice = createSlice({
         state.loading = false;
         state.properties = action.payload;
         state.filteredProperties = action.payload;
+        console.log('Properties loaded successfully:', action.payload.length);
       })
       .addCase(fetchProperties.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch properties';
+        console.error('Properties fetch failed:', state.error);
       });
   },
 });
@@ -218,7 +188,8 @@ export const {
   setSearchFilters, 
   addToSearchHistory, 
   clearSearchHistory, 
-  setFilteredProperties 
+  setFilteredProperties,
+  clearProperties
 } = propertiesSlice.actions;
 
 export default propertiesSlice.reducer; 

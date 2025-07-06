@@ -3,12 +3,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { useAuth } from '../../services/authContext';
 import { auth } from '../config/firebase';
 
 const { width, height } = Dimensions.get('window');
 
 export default function Register() {
     const navigation = useNavigation();
+    const { setUser } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,7 +21,6 @@ export default function Register() {
     const handleRegister = async () => {
         setError(null);
         
-        // Validation
         if (!email || !password || !confirmPassword || !displayName) {
             setError('Please fill in all fields.');
             return;
@@ -37,17 +38,28 @@ export default function Register() {
 
         setLoading(true);
         try {
+            console.log('Attempting registration with:', email.trim());
             const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
             
-            // Update profile with display name
             await updateProfile(userCredential.user, {
                 displayName: displayName.trim()
             });
 
+            console.log('Registration successful:', userCredential.user.email);
+            
+            console.log('Setting user in auth context...');
+            setUser(userCredential.user);
+
             Alert.alert('Success', 'Account created successfully!', [
-                { text: 'OK', onPress: () => navigation.navigate('HomeTabs' as never) }
+                { 
+                    text: 'OK', 
+                    onPress: () => {
+                        console.log('Registration completed, navigation should be triggered');
+                    }
+                }
             ]);
         } catch (e: any) {
+            console.error('Registration error:', e.code, e.message);
             let errorMessage = 'Registration failed.';
             
             if (e.code === 'auth/email-already-in-use') {
@@ -79,7 +91,6 @@ export default function Register() {
                 >
                     <View style={styles.overlay}>
                         <View style={styles.content}>
-                            {/* Header Section */}
                             <View style={styles.headerSection}>
                                 <View style={styles.logoContainer}>
                                     <Text style={styles.logoIcon}>🏠</Text>
@@ -88,7 +99,6 @@ export default function Register() {
                                 <Text style={styles.subtitle}>Join Property Finder and start your journey</Text>
                             </View>
 
-                            {/* Form Section */}
                             <View style={styles.formSection}>
                                 {error ? (
                                     <View style={styles.errorContainer}>
@@ -158,7 +168,6 @@ export default function Register() {
                                 </TouchableOpacity>
                             </View>
 
-                            {/* Footer Section */}
                             <View style={styles.footerSection}>
                                 <View style={styles.divider}>
                                     <View style={styles.dividerLine} />

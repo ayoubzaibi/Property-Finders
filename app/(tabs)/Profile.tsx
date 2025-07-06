@@ -1,16 +1,17 @@
+import { signOut } from 'firebase/auth';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
+    Alert,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
+import { useAuth } from '../../services/authContext';
 import { auth } from '../config/firebase';
-import { signOut } from 'firebase/auth';
 
 export default function ProfileScreen() {
-  const user = auth.currentUser;
+  const { user, setUser } = useAuth();
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to log out?', [
@@ -20,9 +21,13 @@ export default function ProfileScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
+            console.log('Signing out user:', user?.email);
             await signOut(auth);
+            setUser(null);
+            console.log('User signed out successfully');
           } catch (e) {
-            console.error(e);
+            console.error('Sign out error:', e);
+            Alert.alert('Error', 'Failed to sign out. Please try again.');
           }
         },
       },
@@ -35,6 +40,10 @@ export default function ProfileScreen() {
       <View style={styles.info}>
         <Text style={styles.label}>Email</Text>
         <Text style={styles.text}>{user?.email}</Text>
+      </View>
+      <View style={styles.info}>
+        <Text style={styles.label}>Display Name</Text>
+        <Text style={styles.text}>{user?.displayName || 'Not set'}</Text>
       </View>
       <TouchableOpacity style={styles.button} onPress={handleSignOut}>
         <Text style={styles.buttonText}>Log Out</Text>
