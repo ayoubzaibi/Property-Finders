@@ -1,9 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-const { width, height } = Dimensions.get('window');
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function WelcomeScreen() {
   const navigation = useNavigation();
@@ -33,20 +31,6 @@ export default function WelcomeScreen() {
                 </Text>
               </View>
 
-              <View style={styles.featuresSection}>
-                <View style={styles.featureItem}>
-                  <Text style={styles.featureIcon}>🔍</Text>
-                  <Text style={styles.featureText}>Advanced Search</Text>
-                </View>
-                <View style={styles.featureItem}>
-                  <Text style={styles.featureIcon}>❤️</Text>
-                  <Text style={styles.featureText}>Save Favorites</Text>
-                </View>
-                <View style={styles.featureItem}>
-                  <Text style={styles.featureIcon}>📱</Text>
-                  <Text style={styles.featureText}>Mobile First</Text>
-                </View>
-              </View>
 
               <View style={styles.buttonsSection}>
                 <TouchableOpacity
@@ -99,81 +83,81 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: Math.min(30, width * 0.08),
-    paddingTop: Math.max(20, height * 0.05),
-    paddingBottom: Math.max(20, height * 0.05),
-    minHeight: height * 0.8,
+    paddingHorizontal: 30,
+    paddingTop: 40,
+    paddingBottom: 30,
+    minHeight: 600,
   },
   headerSection: {
     alignItems: 'center',
-    marginBottom: Math.min(60, height * 0.08),
+    marginBottom: 40,
     flex: 1,
     justifyContent: 'center',
   },
   logoContainer: {
-    width: Math.min(100, width * 0.25),
-    height: Math.min(100, width * 0.25),
-    borderRadius: Math.min(50, width * 0.125),
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Math.min(30, height * 0.04),
+    marginBottom: 30,
   },
   logoIcon: {
-    fontSize: Math.min(50, width * 0.12),
+    fontSize: 50,
   },
   title: {
-    fontSize: Math.min(36, width * 0.09),
+    fontSize: 36,
     fontWeight: '700',
     color: '#fff',
-    marginBottom: Math.min(20, height * 0.025),
+    marginBottom: 20,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: Math.min(16, width * 0.04),
+    fontSize: 16,
     color: 'rgba(255,255,255,0.9)',
     textAlign: 'center',
-    lineHeight: Math.min(24, width * 0.06),
-    paddingHorizontal: Math.min(20, width * 0.05),
+    lineHeight: 24,
+    paddingHorizontal: 20,
   },
   featuresSection: {
     alignItems: 'center',
-    marginBottom: Math.min(60, height * 0.08),
+    marginBottom: 40,
     flex: 0.8,
     justifyContent: 'center',
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Math.min(20, height * 0.025),
+    marginBottom: 20,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: Math.min(20, width * 0.05),
-    paddingVertical: Math.min(12, height * 0.015),
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderRadius: 25,
-    minWidth: Math.min(200, width * 0.6),
-    maxWidth: width * 0.8,
+    minWidth: 200,
+    maxWidth: 320,
   },
   featureIcon: {
-    fontSize: Math.min(24, width * 0.06),
-    marginRight: Math.min(15, width * 0.04),
+    fontSize: 24,
+    marginRight: 15,
   },
   featureText: {
     color: '#fff',
-    fontSize: Math.min(16, width * 0.04),
+    fontSize: 16,
     fontWeight: '600',
     flex: 1,
   },
   buttonsSection: {
-    marginBottom: Math.min(40, height * 0.05),
+    marginBottom: 30,
     flex: 0.6,
     justifyContent: 'flex-end',
   },
   button: {
-    height: Math.min(55, height * 0.07),
+    height: 55,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Math.min(15, height * 0.02),
+    marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -185,7 +169,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     color: '#667eea',
-    fontSize: Math.min(18, width * 0.045),
+    fontSize: 18,
     fontWeight: '700',
   },
   registerButton: {
@@ -193,7 +177,7 @@ const styles = StyleSheet.create({
   },
   registerButtonText: {
     color: '#667eea',
-    fontSize: Math.min(18, width * 0.045),
+    fontSize: 18,
     fontWeight: '700',
   },
   footer: {
@@ -203,9 +187,9 @@ const styles = StyleSheet.create({
   },
   footerText: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: Math.min(12, width * 0.03),
+    fontSize: 12,
     textAlign: 'center',
-    lineHeight: Math.min(16, width * 0.04),
-    paddingHorizontal: Math.min(20, width * 0.05),
+    lineHeight: 16,
+    paddingHorizontal: 20,
   },
 });

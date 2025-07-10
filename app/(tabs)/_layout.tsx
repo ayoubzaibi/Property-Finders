@@ -1,51 +1,28 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import Details from './Details';
-import Favorites from './Favorites';
-import Home from './Home';
-import Profile from './Profile';
-import Search from './Search';
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
 
-const Stack = createNativeStackNavigator();
-const Tab   = createBottomTabNavigator();
+const TAB_ICONS: Record<string, string> = {
+  index: 'home',
+  search: 'search',
+  Favorites: 'heart',
+  Profile: 'person',
+};
 
-function TabNavigator() {
+export default function TabLayout() {
   return (
-    <Tab.Navigator
+    <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ color, size }) => {
-          let iconName = 'home';
-          if (route.name === 'Search') iconName = 'search';
-          if (route.name === 'Favorites') iconName = 'heart';
-          if (route.name === 'Profile') iconName = 'person';
-          return <Ionicons name={iconName} size={size} color={color} />;
+          const iconName = TAB_ICONS[route.name] || 'ellipse';
+          return <Ionicons name={iconName as any} size={size} color={color} />;
         },
       })}
     >
-      <Tab.Screen name="Home"      component={Home} />
-      <Tab.Screen name="Search"    component={Search} />
-      <Tab.Screen name="Favorites" component={Favorites} />
-      <Tab.Screen name="Profile"   component={Profile} />
-    </Tab.Navigator>
-  );
-}
-
-export default function MainNavigator() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="HomeTabs"
-        component={TabNavigator}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="PropertyDetails"
-        component={Details}
-        options={{ title: 'Property Details' }}
-      />
-    </Stack.Navigator>
+      <Tabs.Screen name="Home" options={{ title: 'Home' }} />
+      <Tabs.Screen name="search" options={{ title: 'Search' }} />
+      <Tabs.Screen name="Favorites" options={{ title: 'Favorites' }} />
+      <Tabs.Screen name="Profile" options={{ title: 'Profile' }} />
+    </Tabs>
   );
 }

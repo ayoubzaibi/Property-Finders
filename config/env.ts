@@ -3,7 +3,7 @@
 
 export const ENV = {
   // RentCast API Configuration
-  RENTCAST_API_KEY: process.env.EXPO_PUBLIC_RENTCAST_API_KEY || 'YOUR_RENTCAST_API_KEY',
+  RENTCAST_API_KEY: process.env.EXPO_PUBLIC_RENTCAST_API_KEY || '5fc2adbae79a4f378ee9f01e5237b1c8',
   
   // Firebase Configuration (already in firebase.ts)
   FIREBASE_API_KEY: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -47,4 +47,4 @@ export function validateEnvironment() {
 export const isDevelopment = __DEV__;
 
 // Check if we're using mock data
-export const useMockData = ENV.ENABLE_MOCK_DATA || ENV.RENTCAST_API_KEY === 'YOUR_RENTCAST_API_KEY'; 
+export const useMockData = ENV.ENABLE_MOCK_DATA || ENV.RENTCAST_API_KEY === '5fc2adbae79a4f378ee9f01e5237b1c8'; 

@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { convertRentCastToProperty, rentcastAPI, RentCastSearchParams } from '../../services/rentcastApi';
 
 export interface Property {
+  title: ReactNode;
   id: string;
   price: number;
   address: string;

@@ -1,407 +1,216 @@
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { addToFavorites } from '../../store/slices/favoritesSlice';
-import { addToSearchHistory, fetchProperties, Property, setSearchFilters } from '../../store/slices/propertiesSlice';
+import React, { useState } from 'react';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 
-type RootStackParamList = {
-  PropertyDetails: { property: Property };
-};
-
-const propertyTypes = ['House', 'Apartment', 'Condo', 'Townhouse', 'Cottage'];
-const amenities = ['Pool', 'Gym', 'Garden', 'Balcony', 'Parking', 'Security'];
+// Mock data for demonstration
+const mockProperties = [
+  {
+    id: '1',
+    title: 'Modern Apartment',
+    location: 'Downtown',
+    price: 450000,
+    bedrooms: 2,
+    bathrooms: 2,
+    propertyType: 'Apartment',
+    photos: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400'],
+  },
+  // ... more mock properties
+];
 
 export default function SearchScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const dispatch = useAppDispatch();
-  const { properties, loading, searchFilters } = useAppSelector((state) => state.properties);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState(mockProperties);
+  const [loading, setLoading] = useState(false);
 
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [localFilters, setLocalFilters] = useState({
-    location: '',
-    minPrice: '',
-    maxPrice: '',
-    propertyType: '',
-    minBedrooms: '',
-    minBathrooms: '',
-    selectedAmenities: [] as string[],
-  });
-
-  useEffect(() => {
-    setLocalFilters({
-      location: searchFilters.location,
-      minPrice: searchFilters.minPrice > 0 ? searchFilters.minPrice.toString() : '',
-      maxPrice: searchFilters.maxPrice < Infinity ? searchFilters.maxPrice.toString() : '',
-      propertyType: searchFilters.propertyType,
-      minBedrooms: searchFilters.minBedrooms > 0 ? searchFilters.minBedrooms.toString() : '',
-      minBathrooms: searchFilters.minBathrooms > 0 ? searchFilters.minBathrooms.toString() : '',
-      selectedAmenities: searchFilters.amenities,
-    });
-  }, [searchFilters]);
-
-  const applyFilters = () => {
-    const filters = {
-      location: localFilters.location,
-      minPrice: Number(localFilters.minPrice) || 0,
-      maxPrice: Number(localFilters.maxPrice) || Infinity,
-      propertyType: localFilters.propertyType,
-      minBedrooms: Number(localFilters.minBedrooms) || 0,
-      minBathrooms: Number(localFilters.minBathrooms) || 0,
-      amenities: localFilters.selectedAmenities,
-    };
-
-    dispatch(setSearchFilters(filters));
-    dispatch(addToSearchHistory(filters));
-    dispatch(fetchProperties(filters));
+  const handleSearch = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setResults(
+        mockProperties.filter(
+          (item) =>
+            item.title.toLowerCase().includes(query.toLowerCase()) ||
+            item.location.toLowerCase().includes(query.toLowerCase())
+        )
+      );
+      setLoading(false);
+    }, 500);
   };
 
-  const toggleAmenity = (amenity: string) => {
-    setLocalFilters(prev => ({
-      ...prev,
-      selectedAmenities: prev.selectedAmenities.includes(amenity)
-        ? prev.selectedAmenities.filter(a => a !== amenity)
-        : [...prev.selectedAmenities, amenity]
-    }));
-  };
-
-  const clearFilters = () => {
-    const defaultFilters = {
-      location: '',
-      minPrice: 0,
-      maxPrice: Infinity,
-      propertyType: '',
-      minBedrooms: 0,
-      minBathrooms: 0,
-      amenities: [],
-    };
-    setLocalFilters({
-      location: '',
-      minPrice: '',
-      maxPrice: '',
-      propertyType: '',
-      minBedrooms: '',
-      minBathrooms: '',
-      selectedAmenities: [],
-    });
-    dispatch(setSearchFilters(defaultFilters));
-    dispatch(fetchProperties(defaultFilters));
-  };
-
-  const handleFavorite = (property: Property) => {
-    dispatch(addToFavorites(property));
-  };
-
-  const renderItem = ({ item }: { item: Property }) => (
-    <TouchableOpacity
-      style={styles.resultCard}
-      onPress={() => navigation.navigate('PropertyDetails', { property: item })}
-    >
-      <View style={styles.resultHeader}>
-        <Text style={styles.price}>${item.price.toLocaleString()}</Text>
-        <TouchableOpacity onPress={() => handleFavorite(item)} style={styles.favoriteBtn}>
-          <Text style={styles.favoriteIcon}>♥</Text>
+  const renderItem = ({ item }: { item: typeof mockProperties[0] }) => (
+    <View style={styles.card}>
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: item.photos[0] }} style={styles.image} />
+        <TouchableOpacity style={styles.favoriteIcon} onPress={() => {}}>
+          <Ionicons name="heart-outline" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
-      <Text style={styles.address}>{item.address}</Text>
-      <Text style={styles.details}>
-        {item.bedrooms} bd • {item.bathrooms} ba • {item.size} sqft
-      </Text>
-      {item.propertyType && (
-        <Text style={styles.propertyType}>{item.propertyType}</Text>
-      )}
-    </TouchableOpacity>
+      <View style={styles.info}>
+        <Text style={styles.price}>${item.price.toLocaleString()}</Text>
+        <View style={styles.addressRow}>
+          <Ionicons name="location-outline" size={16} color="#764ba2" style={{ marginRight: 4 }} />
+          <Text style={styles.location}>{item.location}</Text>
+        </View>
+        <TouchableOpacity style={styles.detailsButton}>
+          <Text style={styles.detailsButtonText}>View Details</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.filters} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionTitle}>Search Properties</Text>
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Location (city, neighborhood, zip)"
-          value={localFilters.location}
-          onChangeText={(text) => setLocalFilters(prev => ({ ...prev, location: text }))}
-        />
-
-        <View style={styles.row}>
-          <TextInput
-            style={[styles.input, styles.halfInput]}
-            placeholder="Min Price"
-            keyboardType="numeric"
-            value={localFilters.minPrice}
-            onChangeText={(text) => setLocalFilters(prev => ({ ...prev, minPrice: text }))}
-          />
-          <TextInput
-            style={[styles.input, styles.halfInput]}
-            placeholder="Max Price"
-            keyboardType="numeric"
-            value={localFilters.maxPrice}
-            onChangeText={(text) => setLocalFilters(prev => ({ ...prev, maxPrice: text }))}
-          />
+    <LinearGradient
+      colors={["#667eea", "#764ba2"]}
+      style={styles.gradient}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Text style={styles.headerTitle}>Search Properties</Text>
+          <Text style={styles.headerSubtitle}>Find your next home</Text>
         </View>
-
-        <TouchableOpacity 
-          style={styles.advancedToggle}
-          onPress={() => setShowAdvanced(!showAdvanced)}
-        >
-          <Text style={styles.advancedToggleText}>
-            {showAdvanced ? 'Hide' : 'Show'} Advanced Filters
-          </Text>
-        </TouchableOpacity>
-
-        {showAdvanced && (
-          <View style={styles.advancedFilters}>
-            <Text style={styles.filterLabel}>Property Type</Text>
-            <View style={styles.chipContainer}>
-              {propertyTypes.map(type => (
-                <TouchableOpacity
-                  key={type}
-                  style={[
-                    styles.chip,
-                    localFilters.propertyType === type && styles.chipSelected
-                  ]}
-                  onPress={() => setLocalFilters(prev => ({ ...prev, propertyType: type }))}
-                >
-                  <Text style={[
-                    styles.chipText,
-                    localFilters.propertyType === type && styles.chipTextSelected
-                  ]}>
-                    {type}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <View style={styles.row}>
-              <View style={styles.halfInput}>
-                <Text style={styles.filterLabel}>Min Bedrooms</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="0"
-                  keyboardType="numeric"
-                  value={localFilters.minBedrooms}
-                  onChangeText={(text) => setLocalFilters(prev => ({ ...prev, minBedrooms: text }))}
-                />
-              </View>
-              <View style={styles.halfInput}>
-                <Text style={styles.filterLabel}>Min Bathrooms</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="0"
-                  keyboardType="numeric"
-                  value={localFilters.minBathrooms}
-                  onChangeText={(text) => setLocalFilters(prev => ({ ...prev, minBathrooms: text }))}
-                />
-              </View>
-            </View>
-
-            <Text style={styles.filterLabel}>Amenities</Text>
-            <View style={styles.chipContainer}>
-              {amenities.map(amenity => (
-                <TouchableOpacity
-                  key={amenity}
-                  style={[
-                    styles.chip,
-                    localFilters.selectedAmenities.includes(amenity) && styles.chipSelected
-                  ]}
-                  onPress={() => toggleAmenity(amenity)}
-                >
-                  <Text style={[
-                    styles.chipText,
-                    localFilters.selectedAmenities.includes(amenity) && styles.chipTextSelected
-                  ]}>
-                    {amenity}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={[styles.button, styles.clearButton]} onPress={clearFilters}>
-            <Text style={styles.clearButtonText}>Clear</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.searchButton]} onPress={applyFilters}>
-            <Text style={styles.searchButtonText}>Search</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
+        <Ionicons name="person-circle" size={36} color="#fff" style={styles.headerAvatar} />
+      </View>
+      <TextInput
+        style={styles.input}
+        placeholder="Search by location or title"
+        value={query}
+        onChangeText={setQuery}
+        onSubmitEditing={handleSearch}
+      />
+      <TouchableOpacity style={styles.button} onPress={handleSearch}>
+        <Text style={styles.buttonText}>Search</Text>
+      </TouchableOpacity>
       {loading ? (
-        <ActivityIndicator size="large" style={styles.loader} />
+        <ActivityIndicator style={{ marginTop: 20 }} />
       ) : (
         <FlatList
-          data={properties}
-          keyExtractor={item => item.id}
+          data={results}
+          keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={styles.resultsList}
-          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingVertical: 30 }}
         />
       )}
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#f5f5f5' 
+  gradient: {
+    flex: 1,
   },
-  filters: { 
-    maxHeight: 400,
-    padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee'
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 28,
+    paddingBottom: 12,
+    paddingHorizontal: 18,
+    backgroundColor: 'transparent',
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 15,
-    color: '#333'
+  headerLeft: {
+    flex: 1,
   },
-  row: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between' 
+  headerTitle: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 2,
+    letterSpacing: 0.5,
+  },
+  headerSubtitle: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  headerAvatar: {
+    marginLeft: 16,
+    fontSize: 36,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: '#f0f1f6',
     borderRadius: 8,
     padding: 12,
-    marginBottom: 15,
     fontSize: 16,
-    backgroundColor: '#fff'
-  },
-  halfInput: { 
-    width: '48%' 
-  },
-  advancedToggle: {
-    paddingVertical: 10,
-    alignItems: 'center',
-    marginBottom: 15
-  },
-  advancedToggleText: {
-    color: '#ff8c00',
-    fontSize: 16,
-    fontWeight: '500'
-  },
-  advancedFilters: {
-    marginBottom: 15
-  },
-  filterLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333'
-  },
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 15
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    marginRight: 8,
-    marginBottom: 8,
-    backgroundColor: '#fff'
-  },
-  chipSelected: {
-    backgroundColor: '#ff8c00',
-    borderColor: '#ff8c00'
-  },
-  chipText: {
-    fontSize: 14,
-    color: '#666'
-  },
-  chipTextSelected: {
-    color: '#fff'
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between'
+    marginBottom: 10,
+    marginHorizontal: 16,
+    marginTop: 24,
   },
   button: {
-    paddingVertical: 12,
+    backgroundColor: '#764ba2',
     borderRadius: 8,
+    padding: 12,
     alignItems: 'center',
-    flex: 1,
-    marginHorizontal: 5
-  },
-  clearButton: {
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: '#ddd'
-  },
-  clearButtonText: {
-    color: '#666',
-    fontWeight: '600'
-  },
-  searchButton: {
-    backgroundColor: '#ff8c00'
-  },
-  searchButtonText: { 
-    color: '#fff', 
-    fontWeight: '600' 
-  },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  resultsList: {
-    padding: 20
-  },
-  resultCard: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 8,
     marginBottom: 10,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2
+    marginHorizontal: 16,
   },
-  resultHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 5
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
-  price: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333'
+  card: {
+    width: '100%',
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    marginBottom: 28,
+    elevation: 6,
+    shadowColor: '#764ba2',
+    shadowOpacity: 0.13,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
   },
-  favoriteBtn: {
-    padding: 5
+  imageContainer: {
+    width: '100%',
+    height: 160,
+    position: 'relative',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
   },
   favoriteIcon: {
-    fontSize: 20,
-    color: '#ff8c00'
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    backgroundColor: 'rgba(118,75,162,0.7)',
+    borderRadius: 20,
+    padding: 6,
+    zIndex: 2,
   },
-  address: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 5
+  info: {
+    padding: 18,
+    paddingTop: 12,
   },
-  details: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 3
+  price: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#764ba2',
+    marginBottom: 8,
   },
-  propertyType: {
-    fontSize: 12,
-    color: '#999',
-    textTransform: 'uppercase',
-    fontWeight: '500'
-  }
+  addressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  location: {
+    fontSize: 15,
+    color: '#444',
+    fontWeight: '500',
+  },
+  detailsButton: {
+    backgroundColor: '#667eea',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  detailsButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 15,
+    letterSpacing: 0.5,
+  },
 });

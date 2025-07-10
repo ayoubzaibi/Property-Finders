@@ -1,5 +1,3 @@
-// RentCast API Service
-// Get your free API key from: https://rapidapi.com/rentcast/api/rentcast
 
 import { ENV, useMockData } from '../config/env';
 
