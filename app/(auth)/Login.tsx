@@ -26,19 +26,11 @@ export default function Login() {
         setLoading(true);
         try {
             if (session && typeof session.signIn === 'function') {
-               
-                session.signIn(email,password);
-                router.replace('/');
-            } else {
-                const result = await signIn(email.trim(), password);
-                if (result.success && result.user) {
-                    router.replace('/Home');
-                } else {
-                    setLocalError(result.error?.message || 'Login failed. Please try again.');
-                }
+                await session.signIn(email, password);
+                router.replace('/Home');
             }
         } catch (e: any) {
-            setLocalError(e.message || 'Login failed. Please try again.');
+            setLocalError(e?.message || 'Login failed. Please try again.');
         } finally {
             setLoading(false);
         }

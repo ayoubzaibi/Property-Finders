@@ -3,7 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-// Mock data for properties
+
+
 const mockProperties = [
   {
     id: '1',
@@ -26,7 +27,7 @@ const mockProperties = [
 ];
 
 export default function HomeScreen() {
-  const [properties, setProperties] = useState(mockProperties);
+  const [properties,] = useState(mockProperties);
   const [loading, setLoading] = useState(false);
 
   const handleRefresh = () => {
