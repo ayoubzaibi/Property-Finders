@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 20,
-    paddingBottom: 10,
+    paddingBottom: 16,
     paddingHorizontal: 16,
     backgroundColor: 'transparent',
   },
@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   searchInputContainer: {
     flex: 1,
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
   },
   filterSection: {
     position: 'absolute',
-    top: 0,
+    top: 60,
     left: 0,
     right: 0,
     backgroundColor: '#fff',
