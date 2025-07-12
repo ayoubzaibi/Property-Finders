@@ -56,10 +56,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   card: {
-    width: '100%',
+    width: '90%',
     backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 30,
+    borderRadius: 16,
+    padding: 24,
     alignItems: 'center',
     elevation: 6,
     shadowColor: '#764ba2',
@@ -68,28 +68,52 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
   },
   avatarContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 30, color: '#764ba2' },
-  info: { marginBottom: 20, alignItems: 'center' },
-  label: { fontSize: 16, fontWeight: '600', color: '#444' },
-  text: { fontSize: 16, color: '#666', marginTop: 5 },
+  title: { 
+    fontSize: 24, 
+    fontWeight: '700', 
+    marginBottom: 24, 
+    color: '#764ba2' 
+  },
+  info: { 
+    marginBottom: 16, 
+    alignItems: 'center' 
+  },
+  label: { 
+    fontSize: 15, 
+    fontWeight: '600', 
+    color: '#444' 
+  },
+  text: { 
+    fontSize: 15, 
+    color: '#666', 
+    marginTop: 4 
+  },
   button: {
-    marginTop: 20,
+    marginTop: 16,
     backgroundColor: '#ff8c00',
-    padding: 15,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     width: '100%',
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  buttonText: { 
+    color: '#fff', 
+    fontSize: 15, 
+    fontWeight: '700' 
+  },
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 28,
-    paddingBottom: 12,
-    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
     backgroundColor: 'transparent',
   },
   headerLeft: {
@@ -97,18 +121,18 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 2,
     letterSpacing: 0.5,
   },
   headerSubtitle: {
     color: 'rgba(255,255,255,0.85)',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
   },
   headerAvatar: {
-    marginLeft: 16,
-    fontSize: 36,
+    marginLeft: 12,
+    fontSize: 32,
   },
 });

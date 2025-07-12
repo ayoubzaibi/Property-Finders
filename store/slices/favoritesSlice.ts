@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { addDoc, collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '../../app/config/firebase';
-import { Property } from './propertiesSlice';
+import { Property } from '../../services/propertyService';
 
 interface FavoriteProperty {
   id: string;

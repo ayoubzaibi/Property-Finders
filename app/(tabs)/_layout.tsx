@@ -23,6 +23,13 @@ export default function TabLayout() {
       <Tabs.Screen name="search" options={{ title: 'Search' }} />
       <Tabs.Screen name="Favorites" options={{ title: 'Favorites' }} />
       <Tabs.Screen name="Profile" options={{ title: 'Profile' }} />
+      <Tabs.Screen 
+        name="Details" 
+        options={{ 
+          title: 'Details',
+          href: null, // This hides the tab from the tab bar
+        }} 
+      />
     </Tabs>
   );
 }

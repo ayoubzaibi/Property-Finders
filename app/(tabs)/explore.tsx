@@ -16,7 +16,19 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 30 },
-  text: { fontSize: 16, color: '#666' },
+  container: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: '#fff' 
+  },
+  title: { 
+    fontSize: 24, 
+    fontWeight: '700', 
+    marginBottom: 24 
+  },
+  text: { 
+    fontSize: 15, 
+    color: '#666' 
+  },
 });
