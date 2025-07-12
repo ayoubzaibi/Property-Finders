@@ -1,13 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, Alert, FlatList, Image, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useProperties } from '../../hooks/useProperties';
 import { checkServerStatus, findWorkingServer, Property, testServerConnection } from '../../services/propertyService';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [showQuickFilters, setShowQuickFilters] = useState(false);
+  const [quickFilters, setQuickFilters] = useState({
+    propertyType: '',
+    priceRange: '',
+  });
+  
   const {
     properties,
     loading,
@@ -27,6 +34,21 @@ export default function HomeScreen() {
   });
 
   const { toggleFavorite, checkIsFavorite, loading: favoritesLoading } = useFavorites();
+
+  const propertyTypes = [
+    { label: 'All', value: '', icon: 'home-outline' },
+    { label: 'House', value: 'house', icon: 'home' },
+    { label: 'Apartment', value: 'apartment', icon: 'business-outline' },
+    { label: 'Condo', value: 'condo', icon: 'business' },
+  ];
+
+  const priceRanges = [
+    { label: 'Any Price', value: '' },
+    { label: 'Under $300k', value: '0-300000' },
+    { label: '$300k-$500k', value: '300000-500000' },
+    { label: '$500k-$750k', value: '500000-750000' },
+    { label: 'Over $750k', value: '750000-999999999' },
+  ];
 
   const handleRefresh = () => {
     refresh();
@@ -127,6 +149,40 @@ export default function HomeScreen() {
     }
   };
 
+  const toggleQuickFilters = () => {
+    setShowQuickFilters(!showQuickFilters);
+  };
+
+  const clearQuickFilters = () => {
+    setQuickFilters({
+      propertyType: '',
+      priceRange: '',
+    });
+  };
+
+  const getFilteredProperties = () => {
+    if (!quickFilters.propertyType && !quickFilters.priceRange) {
+      return properties;
+    }
+
+    return properties.filter(property => {
+      // Filter by property type
+      if (quickFilters.propertyType && property.propertyType?.toLowerCase() !== quickFilters.propertyType.toLowerCase()) {
+        return false;
+      }
+
+      // Filter by price range
+      if (quickFilters.priceRange) {
+        const [minPrice, maxPrice] = quickFilters.priceRange.split('-').map(Number);
+        if (property.price < minPrice || property.price > maxPrice) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  };
+
   const renderItem = ({ item }: { item: Property }) => {
     const isFav = checkIsFavorite(item.id);
     
@@ -220,8 +276,76 @@ export default function HomeScreen() {
         <TouchableOpacity onPress={handleTestConnection} style={styles.testButton}>
           <Ionicons name="bug-outline" size={24} color="#fff" />
         </TouchableOpacity>
+        <TouchableOpacity onPress={toggleQuickFilters} style={styles.filterButton}>
+          <Ionicons name="options" size={24} color="#fff" />
+        </TouchableOpacity>
         <Ionicons name="person-circle" size={36} color="#fff" style={styles.headerAvatar} />
       </View>
+      
+      {/* Quick Filters */}
+      {showQuickFilters && (
+        <View style={styles.quickFiltersContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.filterSection}>
+              <Text style={styles.filterSectionTitle}>Property Type</Text>
+              <View style={styles.filterChips}>
+                {propertyTypes.map((type) => (
+                  <TouchableOpacity
+                    key={type.value}
+                    style={[
+                      styles.filterChip,
+                      quickFilters.propertyType === type.value && styles.filterChipActive
+                    ]}
+                    onPress={() => setQuickFilters(prev => ({ ...prev, propertyType: type.value }))}
+                  >
+                    <Ionicons 
+                      name={type.icon as any} 
+                      size={16} 
+                      color={quickFilters.propertyType === type.value ? "#fff" : "#764ba2"} 
+                    />
+                    <Text style={[
+                      styles.filterChipText,
+                      quickFilters.propertyType === type.value && styles.filterChipTextActive
+                    ]}>
+                      {type.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            
+            <View style={styles.filterSection}>
+              <Text style={styles.filterSectionTitle}>Price Range</Text>
+              <View style={styles.filterChips}>
+                {priceRanges.map((range) => (
+                  <TouchableOpacity
+                    key={range.value}
+                    style={[
+                      styles.filterChip,
+                      quickFilters.priceRange === range.value && styles.filterChipActive
+                    ]}
+                    onPress={() => setQuickFilters(prev => ({ ...prev, priceRange: range.value }))}
+                  >
+                    <Text style={[
+                      styles.filterChipText,
+                      quickFilters.priceRange === range.value && styles.filterChipTextActive
+                    ]}>
+                      {range.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+          
+          <View style={styles.filterActions}>
+            <TouchableOpacity style={styles.clearFiltersButton} onPress={clearQuickFilters}>
+              <Text style={styles.clearFiltersText}>Clear Filters</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+      
       {error ? (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
@@ -240,7 +364,7 @@ export default function HomeScreen() {
         </View>
       ) : (
         <FlatList
-          data={properties}
+          data={getFilteredProperties()}
           keyExtractor={item => item.id}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
@@ -289,6 +413,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   testButton: {
+    marginRight: 10,
+    padding: 4,
+  },
+  filterButton: {
     marginRight: 10,
     padding: 4,
   },
@@ -460,5 +588,69 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 14,
     letterSpacing: 0.5,
+  },
+  quickFiltersContainer: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingVertical: 12,
+    marginHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  filterSection: {
+    marginRight: 20,
+    minWidth: 200,
+  },
+  filterSectionTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginLeft: 16,
+  },
+  filterChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+  },
+  filterChip: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+    marginBottom: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  filterChipActive: {
+    backgroundColor: '#764ba2',
+    borderColor: '#764ba2',
+  },
+  filterChipText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+    marginLeft: 6,
+  },
+  filterChipTextActive: {
+    color: '#fff',
+  },
+  filterActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  clearFiltersButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  clearFiltersText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });

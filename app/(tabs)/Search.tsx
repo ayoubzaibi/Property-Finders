@@ -2,10 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useState, useRef } from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Animated } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Animated, Dimensions } from 'react-native';
 import { useProperties } from '../../hooks/useProperties';
 import { useFavorites } from '../../hooks/useFavorites';
-import { Property, getPropertyDetails } from '../../services/propertyService';
+import { Property } from '../../services/propertyService';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -18,10 +20,13 @@ export default function SearchScreen() {
     bedrooms: '',
     bathrooms: '',
     propertyType: '',
+    squareFootage: '',
+    yearBuilt: '',
   });
   const [selectedPropertyType, setSelectedPropertyType] = useState('');
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   
@@ -38,12 +43,31 @@ export default function SearchScreen() {
   const { toggleFavorite, checkIsFavorite, loading: favoritesLoading } = useFavorites();
 
   const propertyTypes = [
-    { label: 'All Types', value: '' },
-    { label: 'Apartment', value: 'apartment' },
-    { label: 'House', value: 'house' },
-    { label: 'Condo', value: 'condo' },
-    { label: 'Studio', value: 'studio' },
-    { label: 'Townhouse', value: 'townhouse' },
+    { label: 'All Types', value: '', icon: 'home-outline' },
+    { label: 'House', value: 'house', icon: 'home' },
+    { label: 'Apartment', value: 'apartment', icon: 'business-outline' },
+    { label: 'Condo', value: 'condo', icon: 'business' },
+    { label: 'Townhouse', value: 'townhouse', icon: 'home-outline' },
+    { label: 'Studio', value: 'studio', icon: 'square-outline' },
+    { label: 'Loft', value: 'loft', icon: 'cube-outline' },
+    { label: 'Penthouse', value: 'penthouse', icon: 'trending-up-outline' },
+  ];
+
+  const bedroomOptions = [
+    { label: 'Any', value: '' },
+    { label: '1+', value: '1' },
+    { label: '2+', value: '2' },
+    { label: '3+', value: '3' },
+    { label: '4+', value: '4' },
+    { label: '5+', value: '5' },
+  ];
+
+  const bathroomOptions = [
+    { label: 'Any', value: '' },
+    { label: '1+', value: '1' },
+    { label: '2+', value: '2' },
+    { label: '3+', value: '3' },
+    { label: '4+', value: '4' },
   ];
 
   const popularSearches = [
@@ -51,8 +75,23 @@ export default function SearchScreen() {
     'Los Angeles, CA', 
     'Portland, OR',
     'Austin, TX',
-    'Boston, MA'
+    'Boston, MA',
+    'Seattle, WA',
+    'Denver, CO',
+    'Miami, FL'
   ];
+
+  const updateActiveFilters = () => {
+    const active: string[] = [];
+    if (filters.minPrice) active.push(`Min: $${parseInt(filters.minPrice).toLocaleString()}`);
+    if (filters.maxPrice) active.push(`Max: $${parseInt(filters.maxPrice).toLocaleString()}`);
+    if (filters.bedrooms) active.push(`${filters.bedrooms}+ beds`);
+    if (filters.bathrooms) active.push(`${filters.bathrooms}+ baths`);
+    if (filters.propertyType) active.push(filters.propertyType);
+    if (filters.squareFootage) active.push(`${filters.squareFootage}+ sq ft`);
+    if (filters.yearBuilt) active.push(`Built ${filters.yearBuilt}+`);
+    setActiveFilters(active);
+  };
 
   const handleSearch = async (searchQuery?: string) => {
     const searchTerm = searchQuery || query.trim();
@@ -64,6 +103,7 @@ export default function SearchScreen() {
     try {
       setSearched(true);
       setShowSuggestions(false);
+      setShowFilters(false);
       clearError();
       
       // Add to search history
@@ -80,6 +120,8 @@ export default function SearchScreen() {
       if (filters.bedrooms) searchParams.bedrooms = parseInt(filters.bedrooms);
       if (filters.bathrooms) searchParams.bathrooms = parseInt(filters.bathrooms);
       if (filters.propertyType) searchParams.propertyType = filters.propertyType;
+      if (filters.squareFootage) searchParams.squareFootage = parseInt(filters.squareFootage);
+      if (filters.yearBuilt) searchParams.yearBuilt = parseInt(filters.yearBuilt);
       
       await searchProperties(searchTerm, searchParams);
     } catch (err) {
@@ -131,8 +173,35 @@ export default function SearchScreen() {
       bedrooms: '',
       bathrooms: '',
       propertyType: '',
+      squareFootage: '',
+      yearBuilt: '',
     });
     setSelectedPropertyType('');
+    setActiveFilters([]);
+  };
+
+  const applyFilters = () => {
+    updateActiveFilters();
+    handleSearch();
+  };
+
+  const removeFilter = (filterToRemove: string) => {
+    if (filterToRemove.includes('Min:')) {
+      setFilters(prev => ({ ...prev, minPrice: '' }));
+    } else if (filterToRemove.includes('Max:')) {
+      setFilters(prev => ({ ...prev, maxPrice: '' }));
+    } else if (filterToRemove.includes('beds')) {
+      setFilters(prev => ({ ...prev, bedrooms: '' }));
+    } else if (filterToRemove.includes('baths')) {
+      setFilters(prev => ({ ...prev, bathrooms: '' }));
+    } else if (filterToRemove.includes('sq ft')) {
+      setFilters(prev => ({ ...prev, squareFootage: '' }));
+    } else if (filterToRemove.includes('Built')) {
+      setFilters(prev => ({ ...prev, yearBuilt: '' }));
+    } else {
+      setFilters(prev => ({ ...prev, propertyType: '' }));
+      setSelectedPropertyType('');
+    }
   };
 
   const renderFilterSection = () => (
@@ -150,6 +219,11 @@ export default function SearchScreen() {
               setFilters(prev => ({ ...prev, propertyType: type.value }));
             }}
           >
+            <Ionicons 
+              name={type.icon as any} 
+              size={16} 
+              color={selectedPropertyType === type.value ? "#fff" : "#764ba2"} 
+            />
             <Text style={[
               styles.filterChipText,
               selectedPropertyType === type.value && styles.filterChipTextActive
@@ -187,21 +261,75 @@ export default function SearchScreen() {
         <View style={styles.filterRow}>
           <View style={styles.filterInput}>
             <Text style={styles.filterLabel}>Bedrooms</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.optionRow}>
+                {bedroomOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.optionChip,
+                      filters.bedrooms === option.value && styles.optionChipActive
+                    ]}
+                    onPress={() => setFilters(prev => ({ ...prev, bedrooms: option.value }))}
+                  >
+                    <Text style={[
+                      styles.optionChipText,
+                      filters.bedrooms === option.value && styles.optionChipTextActive
+                    ]}>
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+        
+        <View style={styles.filterRow}>
+          <View style={styles.filterInput}>
+            <Text style={styles.filterLabel}>Bathrooms</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.optionRow}>
+                {bathroomOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.optionChip,
+                      filters.bathrooms === option.value && styles.optionChipActive
+                    ]}
+                    onPress={() => setFilters(prev => ({ ...prev, bathrooms: option.value }))}
+                  >
+                    <Text style={[
+                      styles.optionChipText,
+                      filters.bathrooms === option.value && styles.optionChipTextActive
+                    ]}>
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+        
+        <View style={styles.filterRow}>
+          <View style={styles.filterInput}>
+            <Text style={styles.filterLabel}>Min Square Footage</Text>
             <TextInput
               style={styles.input}
               placeholder="Any"
-              value={filters.bedrooms}
-              onChangeText={(text) => setFilters(prev => ({ ...prev, bedrooms: text }))}
+              value={filters.squareFootage}
+              onChangeText={(text) => setFilters(prev => ({ ...prev, squareFootage: text }))}
               keyboardType="numeric"
             />
           </View>
           <View style={styles.filterInput}>
-            <Text style={styles.filterLabel}>Bathrooms</Text>
+            <Text style={styles.filterLabel}>Year Built (Min)</Text>
             <TextInput
               style={styles.input}
               placeholder="Any"
-              value={filters.bathrooms}
-              onChangeText={(text) => setFilters(prev => ({ ...prev, bathrooms: text }))}
+              value={filters.yearBuilt}
+              onChangeText={(text) => setFilters(prev => ({ ...prev, yearBuilt: text }))}
               keyboardType="numeric"
             />
           </View>
@@ -209,11 +337,11 @@ export default function SearchScreen() {
         
         <View style={styles.filterActions}>
           <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
-            <Text style={styles.clearButtonText}>Clear Filters</Text>
+            <Text style={styles.clearButtonText}>Clear All</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.applyButton} 
-            onPress={() => handleSearch()}
+            onPress={applyFilters}
           >
             <Text style={styles.applyButtonText}>Apply Filters</Text>
           </TouchableOpacity>
@@ -366,10 +494,33 @@ export default function SearchScreen() {
         
         <TouchableOpacity style={styles.filterButton} onPress={toggleFilters}>
           <Ionicons name="options" size={20} color="#764ba2" />
+          {activeFilters.length > 0 && (
+            <View style={styles.filterBadge}>
+              <Text style={styles.filterBadgeText}>{activeFilters.length}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
       {showFilters && renderFilterSection()}
+      
+      {/* Active Filters Display */}
+      {activeFilters.length > 0 && (
+        <View style={styles.activeFiltersContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {activeFilters.map((filter, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.activeFilterChip}
+                onPress={() => removeFilter(filter)}
+              >
+                <Text style={styles.activeFilterText}>{filter}</Text>
+                <Ionicons name="close" size={14} color="#fff" />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
       
       {showSuggestions && !searched && renderSearchSuggestions()}
       
@@ -486,6 +637,23 @@ const styles = StyleSheet.create({
   filterButton: {
     padding: 10,
     marginLeft: 8,
+    position: 'relative',
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: '#ff4757',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   filterSection: {
     position: 'absolute',
@@ -515,6 +683,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderWidth: 1,
     borderColor: 'transparent',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   filterChipActive: {
     backgroundColor: '#764ba2',
@@ -524,6 +694,7 @@ const styles = StyleSheet.create({
     color: '#333',
     fontSize: 13,
     fontWeight: '600',
+    marginLeft: 6,
   },
   filterChipTextActive: {
     color: '#fff',
@@ -792,6 +963,51 @@ const styles = StyleSheet.create({
     fontSize: 15,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+  },
+  optionRow: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+  },
+  optionChip: {
+    backgroundColor: '#f0f1f6',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  optionChipActive: {
+    backgroundColor: '#764ba2',
+    borderColor: '#764ba2',
+  },
+  optionChipText: {
+    color: '#666',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  optionChipTextActive: {
+    color: '#fff',
+  },
+  activeFiltersContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  activeFilterChip: {
+    backgroundColor: '#764ba2',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  activeFilterText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+    marginRight: 4,
   },
 });
 
