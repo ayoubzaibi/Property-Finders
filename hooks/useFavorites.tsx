@@ -2,14 +2,12 @@ import { useEffect, useState } from 'react';
 import { useSession } from '../app/context';
 import { addToFavorites, removeFromFavorites, subscribeToFavorites } from '../services/favoritesService';
 import { Property } from '../services/propertyService';
-
 export function useFavorites() {
   const { user } = useSession();
   const [favorites, setFavorites] = useState<Property[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loadingStates, setLoadingStates] = useState<Set<string>>(new Set());
-
-  // Subscribe to favorites changes
+ 
   useEffect(() => {
     if (!user?.uid) {
       setFavorites([]);

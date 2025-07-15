@@ -6,130 +6,87 @@ import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, ScrollView
 import { useSession } from '../context';
 
 export default function Login() {
-    const navigation = useNavigation();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setLocalError] = useState<string | null>(null);
-    const session = useSession();
+  const navigation = useNavigation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setLocalError] = useState<string | null>(null);
+  const session = useSession();
 
+  const handleLogin = async () => {
+    setLocalError(null);
+    if (!email || !password) {
+      setLocalError('Please fill in both fields.');
+      return;
+    }
+    setLoading(true);
+    try {
+      if (session && typeof session.signIn === 'function') {
+        await session.signIn(email, password);
+        router.replace('/Home');
+      }
+    } catch (e) {
+      setLocalError((e as any)?.message as string || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
-    // Use session context signIn directly in handleLogin if available (for demo/dev)
-    const handleLogin = async () => {
-        setLocalError(null);
-        if (!email || !password) {
-            setLocalError('Please fill in both fields.');
-            return;
-        }
-        setLoading(true);
-        try {
-            if (session && typeof session.signIn === 'function') {
-                await session.signIn(email, password);
-                router.replace('/Home');
-            }
-        } catch (e: any) {
-            setLocalError(e?.message || 'Login failed. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'android' ? 'padding' : 'height'}
-            keyboardVerticalOffset={0}
-        >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <LinearGradient
-                    colors={['#667eea', '#764ba2']}
-                    style={styles.container}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                >
-                    <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-                        <View style={styles.overlay}>
-                            <View style={styles.content}>
-                                <View style={styles.headerSection}>
-                                    <View style={styles.logoContainer}>
-                                        <Text style={styles.logoIcon}>🏠</Text>
-                                    </View>
-                                    <Text style={styles.title}>Welcome Back</Text>
-                                    <Text style={styles.subtitle}>Sign in to continue your property search</Text>
-                                </View>
-
-                                <View style={styles.formSection}>
-                                    {error ? (
-                                        <View style={styles.errorContainer}>
-                                            <Text style={styles.errorText}>{error}</Text>
-                                        </View>
-                                    ) : null}
-
-                                    <View style={styles.inputContainer}>
-                                        <Text style={styles.inputLabel}>Email Address</Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Enter your email"
-                                            placeholderTextColor="#999"
-                                            keyboardType="email-address"
-                                            autoCapitalize="none"
-                                            value={email}
-                                            onChangeText={setEmail}
-                                        />
-                                    </View>
-
-                                    <View style={styles.inputContainer}>
-                                        <Text style={styles.inputLabel}>Password</Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Enter your password"
-                                            placeholderTextColor="#999"
-                                            secureTextEntry
-                                            value={password}
-                                            onChangeText={setPassword}
-                                        />
-                                    </View>
-
-                                    <TouchableOpacity
-                                        style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-                                        onPress={handleLogin}
-                                        disabled={loading}
-                                    >
-                                        {loading ? (
-                                            <ActivityIndicator color="#fff" size="small" />
-                                        ) : (
-                                            <Text style={styles.loginButtonText}>Sign In</Text>
-                                        )}
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity style={styles.forgotPassword}>
-                                        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                                    </TouchableOpacity>
-                                </View>
-
-                                <View style={styles.footerSection}>
-                                    <View style={styles.divider}>
-                                        <View style={styles.dividerLine} />
-                                        <Text style={styles.dividerText}>or</Text>
-                                        <View style={styles.dividerLine} />
-                                    </View>
-
-                                    <View style={styles.signupContainer}>
-                                        <Text style={styles.signupText}>Don&apos;t have an account? </Text>
-                                        <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
-                                            <Text style={styles.signupLink}>Sign Up</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-
-                            </View>
-                        </View>
-                    </ScrollView>
-                </LinearGradient>
-            </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
-    );
+  return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'android' ? 'padding' : 'height'} keyboardVerticalOffset={0}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <LinearGradient colors={['#667eea', '#764ba2']} style={styles.container} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+            <View style={styles.overlay}>
+              <View style={styles.content}>
+                <View style={styles.headerSection}>
+                  <View style={styles.logoContainer}>
+                    <Text style={styles.logoIcon}>🏠</Text>
+                  </View>
+                  <Text style={styles.title}>Welcome Back</Text>
+                  <Text style={styles.subtitle}>Sign in to continue your property search</Text>
+                </View>
+                <View style={styles.formSection}>
+                  {error ? (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorText}>{error}</Text>
+                    </View>
+                  ) : null}
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Email Address</Text>
+                    <TextInput style={styles.input} placeholder="Enter your email" placeholderTextColor="#999" keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
+                  </View>
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Password</Text>
+                    <TextInput style={styles.input} placeholder="Enter your password" placeholderTextColor="#999" secureTextEntry value={password} onChangeText={setPassword} />
+                  </View>
+                  <TouchableOpacity style={[styles.loginButton, loading && styles.loginButtonDisabled]} onPress={handleLogin} disabled={loading}>
+                    {loading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.loginButtonText}>Sign In</Text>}
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.forgotPassword}>
+                    <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.footerSection}>
+                  <View style={styles.divider}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.dividerText}>or</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
+                  <View style={styles.signupContainer}>
+                    <Text style={styles.signupText}>Don&apos;t have an account? </Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
+                      <Text style={styles.signupLink}>Sign Up</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        </LinearGradient>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
+  );
 }
 
 const styles = StyleSheet.create({

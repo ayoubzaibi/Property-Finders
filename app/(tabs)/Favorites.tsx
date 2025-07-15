@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {  Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFavorites } from '../../hooks/useFavorites';
 import { Property } from '../../services/propertyService';
 import { useSession } from '../context';
@@ -11,9 +11,9 @@ import PropertyCard from '@/components/PropertyCard';
 export default function FavoritesScreen() {
   const router = useRouter();
   const { user } = useSession();
-  const { favorites, toggleFavorite, checkIsFavorite, loading: favoritesLoading } = useFavorites();
+  const { favorites, toggleFavorite, loading: favoritesLoading } = useFavorites();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     // Set loading to false after a short delay to show the favorites
