@@ -7,7 +7,7 @@ export function useFavorites() {
   const { user } = useSession();
   const [favorites, setFavorites] = useState<Property[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(false);
+  const [loadingStates, setLoadingStates] = useState<Set<string>>(new Set());
 
   // Subscribe to favorites changes
   useEffect(() => {
@@ -30,14 +30,14 @@ export function useFavorites() {
     };
   }, [user?.uid]);
 
-  // Add to favorites
+  
   const addFavorite = async (property: Property): Promise<boolean> => {
     if (!user?.uid) {
       console.log('❌ No user logged in, cannot add to favorites');
       return false;
     }
 
-    setLoading(true);
+    setLoadingStates(prev => new Set([...prev, property.id]));
     try {
       const success = await addToFavorites(user.uid, property);
       if (success) {
@@ -48,7 +48,11 @@ export function useFavorites() {
       console.error('❌ Error adding to favorites:', error);
       return false;
     } finally {
-      setLoading(false);
+      setLoadingStates(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(property.id);
+        return newSet;
+      });
     }
   };
 
@@ -59,7 +63,7 @@ export function useFavorites() {
       return false;
     }
 
-    setLoading(true);
+    setLoadingStates(prev => new Set([...prev, propertyId]));
     try {
       const success = await removeFromFavorites(user.uid, propertyId);
       if (success) {
@@ -70,7 +74,11 @@ export function useFavorites() {
       console.error('❌ Error removing from favorites:', error);
       return false;
     } finally {
-      setLoading(false);
+      setLoadingStates(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(propertyId);
+        return newSet;
+      });
     }
   };
 
@@ -81,10 +89,10 @@ export function useFavorites() {
       return false;
     }
 
-    setLoading(true);
+    setLoadingStates(prev => new Set([...prev, property.id]));
+    const isFav = favoriteIds.has(property.id);
+
     try {
-      const isFav = favoriteIds.has(property.id);
-      
       if (isFav) {
         return await removeFavorite(property.id);
       } else {
@@ -94,22 +102,32 @@ export function useFavorites() {
       console.error('❌ Error toggling favorite:', error);
       return false;
     } finally {
-      setLoading(false);
+      setLoadingStates(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(property.id);
+        return newSet;
+      });
     }
   };
 
-  // Check if property is favorite
+ 
   const checkIsFavorite = (propertyId: string): boolean => {
     return favoriteIds.has(propertyId);
+  };
+
+  // Check if a specific property is loading
+  const isLoading = (propertyId: string): boolean => {
+    return loadingStates.has(propertyId);
   };
 
   return {
     favorites,
     favoriteIds,
-    loading,
+    loading: loadingStates.size > 0,
     addFavorite,
     removeFavorite,
     toggleFavorite,
     checkIsFavorite,
+    isLoading,
   };
 } 

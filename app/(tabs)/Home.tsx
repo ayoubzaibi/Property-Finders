@@ -6,6 +6,7 @@ import { ActivityIndicator, Alert, FlatList, Image, RefreshControl, ScrollView, 
 import { useFavorites } from '../../hooks/useFavorites';
 import { useProperties } from '../../hooks/useProperties';
 import { checkServerStatus, findWorkingServer, Property, testServerConnection } from '../../services/propertyService';
+import PropertyCard from '@/components/PropertyCard';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function HomeScreen() {
     },
   });
 
-  const { toggleFavorite, checkIsFavorite, loading: favoritesLoading } = useFavorites();
+  const { toggleFavorite, checkIsFavorite, isLoading } = useFavorites();
 
   const propertyTypes = [
     { label: 'All', value: '', icon: 'home-outline' },
@@ -59,79 +60,12 @@ export default function HomeScreen() {
     refresh();
   };
 
-  const handleTestConnection = async () => {
-    try {
-      const result = await testServerConnection();
-      Alert.alert(
-        'Server Connection Test',
-        `URL: ${result.url}\n\nStatus: ${result.success ? '✅ Success' : '❌ Failed'}\n\nMessage: ${result.message}`,
-        [{ text: 'OK' }]
-      );
-    } catch (err) {
-      Alert.alert('Test Failed', 'Could not test server connection');
-    }
-  };
 
-  const handleFindServer = async () => {
-    try {
-      Alert.alert('Finding Server', 'Testing multiple server URLs...', [], { cancelable: false });
-      
-      const result = await findWorkingServer();
-      
-      Alert.alert(
-        'Server Search Result',
-        result.success 
-          ? `✅ ${result.message}\n\nWorking URL: ${result.workingUrl}\n\nPlease update your server configuration to use this URL.`
-          : `❌ ${result.message}\n\nPlease make sure your server is running on port 3000.`,
-        [
-          { 
-            text: 'OK',
-            onPress: () => {
-              if (result.success) {
-                Alert.alert(
-                  'Update Configuration',
-                  'Would you like me to help you update the configuration with the working URL?',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Yes', onPress: () => console.log('Update config with:', result.workingUrl) }
-                  ]
-                );
-              }
-            }
-          }
-        ]
-      );
-    } catch (err) {
-      Alert.alert('Search Failed', 'Could not search for servers');
-    }
-  };
 
-  const handleCheckServerStatus = async () => {
-    try {
-      Alert.alert('Checking Server Status', 'Please wait...', [], { cancelable: false });
-      
-      const result = await checkServerStatus();
-      
-      const suggestionsText = result.suggestions.length > 0 
-        ? '\n\nSuggestions:\n' + result.suggestions.map(s => `• ${s}`).join('\n')
-        : '';
-      
-      Alert.alert(
-        'Server Status',
-        `${result.message}${suggestionsText}`,
-        [{ text: 'OK' }]
-      );
-    } catch (err) {
-      Alert.alert('Status Check Failed', 'Could not check server status');
-    }
-  };
 
-  const handlePropertyPress = (propertyId: string) => {
-    router.push(`/Details?propertyId=${propertyId}`);
-  };
 
   const handleFavoritePress = async (property: Property) => {
-    try {
+      try {
       const success = await toggleFavorite(property);
       if (success) {
         const isFav = checkIsFavorite(property.id);
@@ -187,34 +121,42 @@ export default function HomeScreen() {
     const isFav = checkIsFavorite(item.id);
     
     return (
-      <TouchableOpacity
-        style={styles.card}
+    <TouchableOpacity
+      style={styles.card}
         activeOpacity={0.9}
-        onPress={() => handlePropertyPress(item.id)}
-      >
+        
+    >
         <View style={styles.imageContainer}>
-          <Image
+      <Image
             source={{ uri: item.photos[0] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400' }}
-            style={styles.image}
-            resizeMode="cover"
-          />
+        style={styles.image}
+        resizeMode="cover"
+      />
           <TouchableOpacity 
-            style={styles.favoriteIcon} 
-            onPress={() => handleFavoritePress(item)}
-            disabled={favoritesLoading}
+            style={[styles.favoriteIcon, isLoading(item.id) && styles.favoriteIconLoading]} 
+            onPress={(e) => {
+              e.stopPropagation();
+              handleFavoritePress(item);
+            }}
+            disabled={isLoading(item.id)}
+            activeOpacity={0.7}
           >
-            <Ionicons 
-              name={isFav ? "heart" : "heart-outline"} 
-              size={24} 
-              color={isFav ? "#ff4757" : "#fff"} 
-            />
+            {isLoading(item.id) ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Ionicons 
+                name={isFav ? "heart" : "heart-outline"} 
+                size={24} 
+                color={isFav ? "#ff4757" : "#fff"} 
+              />
+            )}
           </TouchableOpacity>
         </View>
-        <View style={styles.info}>
+      <View style={styles.info}>
           <Text style={styles.price}>${item.price.toLocaleString()}</Text>
           <View style={styles.addressRow}>
             <Ionicons name="location-outline" size={16} color="#764ba2" />
-            <Text style={styles.address}>{item.address}</Text>
+        <Text style={styles.address}>{item.address}</Text>
           </View>
           {item.bedrooms && item.bathrooms && (
             <View style={styles.detailsRow}>
@@ -226,38 +168,18 @@ export default function HomeScreen() {
           )}
                   <TouchableOpacity 
           style={styles.detailsButton}
-          onPress={() => handlePropertyPress(item.id)}
+          
         >
           <Text style={styles.detailsButtonText}>View Details</Text>
         </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    );
+      </View>
+    </TouchableOpacity>
+  );
   };
 
   if (loading) {
     return (
-      <LinearGradient
-        colors={["#667eea", "#764ba2"]}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.headerTitle}>Discover Properties</Text>
-            <Text style={styles.headerSubtitle}>Find your dream home today</Text>
-          </View>
-          <TouchableOpacity onPress={handleTestConnection} style={styles.testButton}>
-            <Ionicons name="bug-outline" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Ionicons name="person-circle" size={36} color="#fff" style={styles.headerAvatar} />
-        </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#fff" />
-          <Text style={styles.loadingText}>Loading properties...</Text>
-        </View>
-      </LinearGradient>
+     <PropertyCard /> 
     );
   }
 
@@ -273,7 +195,7 @@ export default function HomeScreen() {
           <Text style={styles.headerTitle}>Discover Properties</Text>
           <Text style={styles.headerSubtitle}>Find your dream home today</Text>
         </View>
-        <TouchableOpacity onPress={handleTestConnection} style={styles.testButton}>
+        <TouchableOpacity  style={styles.testButton}>
           <Ionicons name="bug-outline" size={24} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity onPress={toggleQuickFilters} style={styles.filterButton}>
@@ -352,22 +274,22 @@ export default function HomeScreen() {
           <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.testConnectionButton} onPress={handleTestConnection}>
+          <TouchableOpacity style={styles.testConnectionButton} >
             <Text style={styles.testConnectionButtonText}>Test Connection</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.findServerButton} onPress={handleFindServer}>
+          <TouchableOpacity style={styles.findServerButton} >
             <Text style={styles.findServerButtonText}>🔍 Find Working Server</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.statusButton} onPress={handleCheckServerStatus}>
+          <TouchableOpacity style={styles.statusButton} >
             <Text style={styles.statusButtonText}>📊 Check Server Status</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <FlatList
+      <FlatList
           data={getFilteredProperties()}
-          keyExtractor={item => item.id}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
+        keyExtractor={item => item.id}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingVertical: 30, paddingTop: 0 }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
@@ -543,9 +465,22 @@ const styles = StyleSheet.create({
     top: 12,
     right: 12,
     backgroundColor: 'rgba(118,75,162,0.7)',
-    borderRadius: 18,
-    padding: 5,
-    zIndex: 2,
+    borderRadius: 20,
+    padding: 8,
+    zIndex: 10,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    minWidth: 36,
+    minHeight: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  favoriteIconLoading: {
+    backgroundColor: 'rgba(118,75,162,0.5)',
+    opacity: 0.8,
   },
   info: {
     padding: 16,

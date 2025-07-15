@@ -1,25 +1,14 @@
-// Network configuration for different environments
+
 const getApiBaseUrl = () => {
   if (__DEV__) {
-    // Development environment - try multiple IP addresses
-    const possibleUrls = [
-      'http://localhost:3000/api/v1/properties',      // Local development
-      'http://127.0.0.1:3000/api/v1/properties',     // Alternative localhost
-      'http://192.168.242.142:3000/api/v1/properties', // Your actual IP address
-      'http://10.0.2.2:3000/api/v1/properties',      // Android emulator
-    ];
-    
-    // For now, let's use your actual IP address for better connectivity
-    return 'http://192.168.242.142:3000/api/v1/properties';
+    return 'http://10.205.9.64:3000/api/v1/properties';
   }
-  
-  // Production environment
   return 'http://localhost:3000/api/v1/properties';
 };
 
 const API_BASE_URL = getApiBaseUrl();
 
-// Add debugging information
+
 console.log('🔧 API_BASE_URL configured as:', API_BASE_URL);
 console.log('🔧 __DEV__ is:', __DEV__);
 
@@ -40,16 +29,16 @@ export type Property = {
   amenities?: string[];
 };
 
-// Test function to check server connectivity
+
 export async function testServerConnection(): Promise<{ success: boolean; message: string; url: string }> {
   try {
     console.log('🧪 Testing server connection to:', API_BASE_URL);
     console.log('🧪 Full test URL:', `${API_BASE_URL}?page=1&limit=2`);
     
-    // First, try a simple health check
+    
     try {
       const healthUrl = `${API_BASE_URL.replace('/api/v1/properties', '')}/health`;
-      console.log('🧪 Health check URL:', healthUrl);
+      console.log('Health check URL:', healthUrl);
       const healthResponse = await fetch(healthUrl, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
@@ -63,9 +52,9 @@ export async function testServerConnection(): Promise<{ success: boolean; messag
     const timeoutId = setTimeout(() => {
       console.log('⏰ Server test timeout - aborting');
       controller.abort();
-    }, 10000); // 10 second timeout
+    }, 10000); 
 
-    // Test with your exact Postman URL format
+    
     const testUrl = `${API_BASE_URL}?page=1&limit=2`;
     console.log('🌐 Making fetch request to:', testUrl);
     const response = await fetch(testUrl, {
@@ -124,13 +113,13 @@ export async function testServerConnection(): Promise<{ success: boolean; messag
   }
 }
 
-// Test multiple URLs to find a working server
+
 export async function findWorkingServer(): Promise<{ success: boolean; workingUrl: string | null; message: string }> {
   const testUrls = [
-    'http://192.168.242.142:3000/api/v1/properties', // Your actual IP address
-    'http://localhost:3000/api/v1/properties',      // Local development
-    'http://127.0.0.1:3000/api/v1/properties',     // Alternative localhost
-    'http://10.0.2.2:3000/api/v1/properties',      // Android emulator
+    'http://192.168.242.142:3000/api/v1/properties', 
+    'http://localhost:3000/api/v1/properties',      
+    'http://127.0.0.1:3000/api/v1/properties',     
+    'http://10.0.2.2:3000/api/v1/properties',      
   ];
 
   console.log('Testing multiple server URLs...');
@@ -143,7 +132,7 @@ export async function findWorkingServer(): Promise<{ success: boolean; workingUr
       const timeoutId = setTimeout(() => {
         console.log(`Timeout for ${url}`);
         controller.abort();
-      }, 8000); // Increased to 8 seconds
+      }, 8000); 
 
         const response = await fetch(`${url}?page=1&limit=2`, {
         method: 'GET',
@@ -199,7 +188,7 @@ export async function fetchProperties(params: {
     
     const queryParams = new URLSearchParams();
     
-    // Add query parameters
+  
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.limit) queryParams.append('limit', params.limit.toString());
     if (params.location) queryParams.append('location', params.location);
@@ -212,12 +201,12 @@ export async function fetchProperties(params: {
     const url = `${API_BASE_URL}?${queryParams.toString()}`;
     console.log('🌐 Making request to:', url);
 
-    // Add timeout to the fetch request
+    
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       console.log('⏰ Request timeout - aborting');
       controller.abort();
-    }, 15000); // Increased to 15 seconds
+    }, 15000); 
 
     console.log('📡 Sending fetch request...');
     const response = await fetch(url, {
@@ -252,19 +241,19 @@ export async function fetchProperties(params: {
       throw new Error('Invalid JSON response from server');
     }
 
-    // Handle different response formats
+    
     let properties: Property[] = [];
     
     if (data.success && data.data && data.data.properties) {
-      // Expected format: { success: true, data: { properties: [...] } }
+      
       properties = data.data.properties;
       console.log('📋 Using success.data.properties format');
     } else if (data.properties) {
-      // Alternative format: { properties: [...] }
+      
       properties = data.properties;
       console.log('📋 Using properties format');
     } else if (data.items && Array.isArray(data.items)) {
-      // Your server format: { items: [...], currentPage: 1, totalPages: 1 }
+      
       properties = data.items.map((item: any) => ({
         id: item.id,
         title: item.title,
@@ -283,7 +272,7 @@ export async function fetchProperties(params: {
       }));
       console.log('📋 Using items format (your server format)');
     } else if (Array.isArray(data)) {
-      // Direct array format: [...]
+      
       properties = data;
       console.log('📋 Using direct array format');
     } else {
@@ -300,7 +289,7 @@ export async function fetchProperties(params: {
     console.error('💥 Error message:', error.message);
     console.error('💥 Error stack:', error.stack);
     
-    // Check if it's a network error
+   
     if (error instanceof TypeError && error.message?.includes('Network request failed')) {
       console.log('🌐 Network error detected - server might not be running');
       console.log('🌐 Please check if your server is running on http://localhost:3000');
@@ -308,7 +297,7 @@ export async function fetchProperties(params: {
       console.log('⏰ Request timeout - server might be slow or not responding');
     }
     
-    // Fallback to mock data if server is not available
+    
     console.log('🔄 Falling back to mock data');
     return getMockProperties();
   }
@@ -338,7 +327,7 @@ export async function searchProperties(query: string, filters: {
   }
 }
 
-// Get individual property details using your Postman URL format
+
 export async function getPropertyDetails(propertyId: string): Promise<Property | null> {
   try {
     console.log('🏠 Fetching property details for ID:', propertyId);
@@ -385,16 +374,15 @@ export async function getPropertyDetails(propertyId: string): Promise<Property |
       throw new Error('Invalid JSON response from server');
     }
 
-    // Handle different response formats for property details
+    
     let property: Property | null = null;
     
     if (data.success && data.data) {
-      // Expected format: { success: true, data: { ...property } }
+      
       property = data.data;
       console.log('📋 Using success.data format for property details');
     } else if (data.id) {
-      // Direct property format: { id: "...", ... }
-      // Convert your server format to app format
+      
       property = {
         id: data.id,
         title: data.title,
@@ -440,7 +428,7 @@ export async function getPropertyDetails(propertyId: string): Promise<Property |
 
 
 
-// Mock data fallback
+
 function getMockProperties(): Property[] {
   return [
     {
@@ -494,14 +482,14 @@ function getMockProperties(): Property[] {
   ];
 }
 
-// Simple server status checker
+
 export async function checkServerStatus(): Promise<{ running: boolean; message: string; suggestions: string[] }> {
   const suggestions: string[] = [];
   
   try {
     console.log('Checking if server is running...');
     
-    // Try to connect to the server with a very short timeout
+   
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
 

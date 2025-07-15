@@ -7,7 +7,7 @@ import { useProperties } from '../../hooks/useProperties';
 import { useFavorites } from '../../hooks/useFavorites';
 import { Property } from '../../services/propertyService';
 
-const { width: screenWidth } = Dimensions.get('window');
+Dimensions.get('window');
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function SearchScreen() {
     autoLoad: false,
   });
 
-  const { toggleFavorite, checkIsFavorite, loading: favoritesLoading } = useFavorites();
+  const { toggleFavorite, checkIsFavorite, isLoading } = useFavorites();
 
   const propertyTypes = [
     { label: 'All Types', value: '', icon: 'home-outline' },
@@ -106,15 +106,12 @@ export default function SearchScreen() {
       setShowFilters(false);
       clearError();
       
-      // Add to search history
       if (!searchHistory.includes(searchTerm)) {
         setSearchHistory(prev => [searchTerm, ...prev.slice(0, 4)]);
       }
       
-      // Prepare search parameters
       const searchParams: any = { search: searchTerm };
       
-      // Add filters if they exist
       if (filters.minPrice) searchParams.minPrice = parseInt(filters.minPrice);
       if (filters.maxPrice) searchParams.maxPrice = parseInt(filters.maxPrice);
       if (filters.bedrooms) searchParams.bedrooms = parseInt(filters.bedrooms);
@@ -140,12 +137,12 @@ export default function SearchScreen() {
 
   const handleFavoritePress = async (property: Property) => {
     try {
+      const currentIsFav = checkIsFavorite(property.id);
       const success = await toggleFavorite(property);
       if (success) {
-        const isFav = checkIsFavorite(property.id);
         Alert.alert(
-          isFav ? 'Added to Favorites' : 'Removed from Favorites',
-          isFav ? 'Property has been added to your favorites!' : 'Property has been removed from your favorites.',
+          !currentIsFav ? 'Added to Favorites' : 'Removed from Favorites',
+          !currentIsFav ? 'Property has been added to your favorites!' : 'Property has been removed from your favorites.',
           [{ text: 'OK' }]
         );
       } else {
@@ -206,6 +203,15 @@ export default function SearchScreen() {
 
   const renderFilterSection = () => (
     <Animated.View style={[styles.filterSection, { opacity: fadeAnim }]}>
+      <View style={styles.filterHeader}>
+        <Text style={styles.filterTitle}>Filters</Text>
+    <TouchableOpacity
+          style={styles.closeFilterButton} 
+          onPress={() => setShowFilters(false)}
+    >
+          <Ionicons name="close" size={24} color="#666" />
+        </TouchableOpacity>
+      </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
         {propertyTypes.map((type) => (
           <TouchableOpacity
@@ -229,8 +235,8 @@ export default function SearchScreen() {
               selectedPropertyType === type.value && styles.filterChipTextActive
             ]}>
               {type.label}
-            </Text>
-          </TouchableOpacity>
+      </Text>
+    </TouchableOpacity>
         ))}
       </ScrollView>
       
@@ -238,47 +244,47 @@ export default function SearchScreen() {
         <View style={styles.filterRow}>
           <View style={styles.filterInput}>
             <Text style={styles.filterLabel}>Min Price</Text>
-            <TextInput
-              style={styles.input}
+        <TextInput
+          style={styles.input}
               placeholder="$0"
               value={filters.minPrice}
               onChangeText={(text) => setFilters(prev => ({ ...prev, minPrice: text }))}
-              keyboardType="numeric"
-            />
+            keyboardType="numeric"
+          />
           </View>
           <View style={styles.filterInput}>
             <Text style={styles.filterLabel}>Max Price</Text>
-            <TextInput
+          <TextInput
               style={styles.input}
               placeholder="$10,000"
               value={filters.maxPrice}
               onChangeText={(text) => setFilters(prev => ({ ...prev, maxPrice: text }))}
-              keyboardType="numeric"
-            />
+            keyboardType="numeric"
+          />
           </View>
         </View>
-        
+
         <View style={styles.filterRow}>
           <View style={styles.filterInput}>
             <Text style={styles.filterLabel}>Bedrooms</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.optionRow}>
                 {bedroomOptions.map((option) => (
-                  <TouchableOpacity
+        <TouchableOpacity 
                     key={option.value}
                     style={[
                       styles.optionChip,
                       filters.bedrooms === option.value && styles.optionChipActive
                     ]}
                     onPress={() => setFilters(prev => ({ ...prev, bedrooms: option.value }))}
-                  >
+        >
                     <Text style={[
                       styles.optionChipText,
                       filters.bedrooms === option.value && styles.optionChipTextActive
                     ]}>
                       {option.label}
-                    </Text>
-                  </TouchableOpacity>
+          </Text>
+        </TouchableOpacity>
                 ))}
               </View>
             </ScrollView>
@@ -291,50 +297,50 @@ export default function SearchScreen() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.optionRow}>
                 {bathroomOptions.map((option) => (
-                  <TouchableOpacity
+                <TouchableOpacity
                     key={option.value}
-                    style={[
+                  style={[
                       styles.optionChip,
                       filters.bathrooms === option.value && styles.optionChipActive
-                    ]}
+                  ]}
                     onPress={() => setFilters(prev => ({ ...prev, bathrooms: option.value }))}
-                  >
-                    <Text style={[
+                >
+                  <Text style={[
                       styles.optionChipText,
                       filters.bathrooms === option.value && styles.optionChipTextActive
-                    ]}>
+                  ]}>
                       {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                  </Text>
+                </TouchableOpacity>
+              ))}
               </View>
             </ScrollView>
           </View>
-        </View>
-        
+            </View>
+
         <View style={styles.filterRow}>
           <View style={styles.filterInput}>
             <Text style={styles.filterLabel}>Min Square Footage</Text>
-            <TextInput
-              style={styles.input}
+                <TextInput
+                  style={styles.input}
               placeholder="Any"
               value={filters.squareFootage}
               onChangeText={(text) => setFilters(prev => ({ ...prev, squareFootage: text }))}
-              keyboardType="numeric"
-            />
-          </View>
+                  keyboardType="numeric"
+                />
+              </View>
           <View style={styles.filterInput}>
             <Text style={styles.filterLabel}>Year Built (Min)</Text>
-            <TextInput
-              style={styles.input}
+                <TextInput
+                  style={styles.input}
               placeholder="Any"
               value={filters.yearBuilt}
               onChangeText={(text) => setFilters(prev => ({ ...prev, yearBuilt: text }))}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
-        
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
         <View style={styles.filterActions}>
           <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
             <Text style={styles.clearButtonText}>Clear All</Text>
@@ -355,7 +361,7 @@ export default function SearchScreen() {
       <Text style={styles.suggestionsTitle}>Popular Searches</Text>
       <View style={styles.suggestionsGrid}>
         {popularSearches.map((search, index) => (
-          <TouchableOpacity
+                <TouchableOpacity
             key={index}
             style={styles.suggestionChip}
             onPress={() => {
@@ -365,9 +371,9 @@ export default function SearchScreen() {
           >
             <Ionicons name="location-outline" size={16} color="#764ba2" />
             <Text style={styles.suggestionText}>{search}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+                </TouchableOpacity>
+              ))}
+            </View>
       
       {searchHistory.length > 0 && (
         <>
@@ -405,15 +411,23 @@ export default function SearchScreen() {
             style={styles.image} 
           />
           <TouchableOpacity 
-            style={styles.favoriteIcon} 
-            onPress={() => handleFavoritePress(item)}
-            disabled={favoritesLoading}
+            style={[styles.favoriteIcon, isLoading(item.id) && styles.favoriteIconLoading]} 
+            onPress={(e) => {
+              e.stopPropagation();
+              handleFavoritePress(item);
+            }}
+            disabled={isLoading(item.id)}
+            activeOpacity={0.7}
           >
-            <Ionicons 
-              name={isFav ? "heart" : "heart-outline"} 
-              size={24} 
-              color={isFav ? "#ff4757" : "#fff"} 
-            />
+            {isLoading(item.id) ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Ionicons 
+                name={isFav ? "heart" : "heart-outline"} 
+                size={24} 
+                color={isFav ? "#ff4757" : "#fff"} 
+              />
+            )}
           </TouchableOpacity>
           <View style={styles.propertyTypeBadge}>
             <Text style={styles.propertyTypeText}>{item.propertyType || 'Property'}</Text>
@@ -504,7 +518,6 @@ export default function SearchScreen() {
 
       {showFilters && renderFilterSection()}
       
-      {/* Active Filters Display */}
       {activeFilters.length > 0 && (
         <View style={styles.activeFiltersContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -519,9 +532,9 @@ export default function SearchScreen() {
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </View>
-      )}
-      
+          </View>
+        )}
+
       {showSuggestions && !searched && renderSearchSuggestions()}
       
       {error ? (
@@ -547,12 +560,12 @@ export default function SearchScreen() {
               <Text style={styles.filterText}>Filters</Text>
             </TouchableOpacity>
           </View>
-          <FlatList
+        <FlatList
             data={results}
             keyExtractor={(item) => item.id}
-            renderItem={renderItem}
+          renderItem={renderItem}
             contentContainerStyle={{ paddingVertical: 20 }}
-            showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Ionicons name="search" size={64} color="rgba(255,255,255,0.6)" />
@@ -572,7 +585,7 @@ export default function SearchScreen() {
 
 const styles = StyleSheet.create({
   gradient: {
-    flex: 1,
+    flex: 1, 
   },
   header: {
     flexDirection: 'row',
@@ -603,7 +616,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
   },
   searchContainer: {
-    flexDirection: 'row',
+    flexDirection: 'row', 
     alignItems: 'center',
     paddingHorizontal: 16,
     marginBottom: 12,
@@ -671,6 +684,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     maxHeight: '80%',
+  },
+  filterHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f1f6',
+  },
+  filterTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  closeFilterButton: {
+    padding: 4,
+    borderRadius: 20,
+    backgroundColor: '#f0f1f6',
   },
   filterScroll: {
     marginBottom: 12,
@@ -771,7 +803,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   suggestionText: {
-    color: '#fff',
+    color: '#fff', 
     fontSize: 13,
     marginLeft: 6,
   },
@@ -811,9 +843,22 @@ const styles = StyleSheet.create({
     top: 12,
     right: 12,
     backgroundColor: 'rgba(118,75,162,0.7)',
-    borderRadius: 18,
-    padding: 5,
-    zIndex: 2,
+    borderRadius: 20,
+    padding: 8,
+    zIndex: 10,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    minWidth: 36,
+    minHeight: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  favoriteIconLoading: {
+    backgroundColor: 'rgba(118,75,162,0.5)',
+    opacity: 0.8,
   },
   propertyTypeBadge: {
     position: 'absolute',

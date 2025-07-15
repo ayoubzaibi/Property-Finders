@@ -22,7 +22,7 @@ export default function DetailsScreen() {
     if (propertyId) {
       loadPropertyDetails();
     }
-  }, [propertyId]);
+  }, [propertyId, ]);
 
   const loadPropertyDetails = async () => {
     if (!propertyId) return;
@@ -104,7 +104,7 @@ export default function DetailsScreen() {
       >
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Text><Ionicons name="arrow-back" size={24} color="#fff" /></Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Property Details</Text>
           <View style={styles.headerSpacer} />
@@ -127,7 +127,7 @@ export default function DetailsScreen() {
       >
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Text><Ionicons name="arrow-back" size={24} color="#fff" /></Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Property Details</Text>
           <View style={styles.headerSpacer} />
@@ -157,7 +157,7 @@ export default function DetailsScreen() {
     >
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Text><Ionicons name="arrow-back" size={24} color="#fff" /></Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Property Details</Text>
         <TouchableOpacity 
@@ -165,11 +165,13 @@ export default function DetailsScreen() {
           onPress={handleFavoritePress}
           disabled={favoritesLoading}
         >
+          <Text>
           <Ionicons 
             name={isFav ? "heart" : "heart-outline"} 
             size={24} 
             color={isFav ? "#ff4757" : "#fff"} 
           />
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -290,7 +292,7 @@ export default function DetailsScreen() {
 
           {/* Contact Button */}
           <TouchableOpacity style={styles.contactButton}>
-            <Ionicons name="call-outline" size={20} color="#fff" />
+            <Text><Ionicons name="call-outline" size={20} color="#fff" /></Text>
             <Text style={styles.contactButtonText}>Contact Agent</Text>
           </TouchableOpacity>
         </View>

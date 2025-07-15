@@ -1,22 +1,16 @@
-import { collection, deleteDoc, doc, DocumentData, getDoc, onSnapshot, query, setDoc, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, DocumentData, getDocs, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../app/config/firebase';
 import { Property } from './propertyService';
 
-// Add a property to favorites
+// Add a property to favorites (allow duplicates)
 export async function addToFavorites(userId: string, property: Property): Promise<boolean> {
   try {
-    console.log('❤️ Adding property to favorites:', property.id, 'for user:', userId);
-    
-    // Use property.id as the document ID for easier management
-    const favoriteRef = doc(db, 'favorites', property.id);
-    await setDoc(favoriteRef, {
+    await addDoc(collection(db, 'favorites'), {
       userId,
       propertyId: property.id,
       property,
       createdAt: new Date(),
     });
-    
-    console.log('✅ Property added to favorites successfully');
     return true;
   } catch (error) {
     console.error('❌ Error adding to favorites:', error);
@@ -24,40 +18,37 @@ export async function addToFavorites(userId: string, property: Property): Promis
   }
 }
 
-// Remove a property from favorites
+// Remove a property from favorites (remove one instance)
 export async function removeFromFavorites(userId: string, propertyId: string): Promise<boolean> {
   try {
-    console.log('💔 Removing property from favorites:', propertyId, 'for user:', userId);
-    
-    // Delete using propertyId as document ID
-    const favoriteRef = doc(db, 'favorites', propertyId);
-    await deleteDoc(favoriteRef);
-    
-    console.log('✅ Property removed from favorites successfully');
-    return true;
+    const q = query(
+      collection(db, 'favorites'),
+      where('userId', '==', userId),
+      where('propertyId', '==', propertyId)
+    );
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      // Remove only the first found instance
+      await deleteDoc(snapshot.docs[0].ref);
+      return true;
+    }
+    return false;
   } catch (error) {
     console.error('❌ Error removing from favorites:', error);
     return false;
   }
 }
 
-// Check if a property is in favorites
+// Check if a property is in favorites (at least one instance)
 export async function isFavorite(userId: string, propertyId: string): Promise<boolean> {
   try {
-    console.log('🔍 Checking if property is favorite:', propertyId, 'for user:', userId);
-    
-    const favoriteRef = doc(db, 'favorites', propertyId);
-    const docSnap = await getDoc(favoriteRef);
-    
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      const isFav = data.userId === userId;
-      console.log('🔍 Property favorite status:', isFav);
-      return isFav;
-    }
-    
-    console.log('🔍 Property not found in favorites');
-    return false;
+    const q = query(
+      collection(db, 'favorites'),
+      where('userId', '==', userId),
+      where('propertyId', '==', propertyId)
+    );
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
   } catch (error) {
     console.error('❌ Error checking favorite status:', error);
     return false;
@@ -66,22 +57,16 @@ export async function isFavorite(userId: string, propertyId: string): Promise<bo
 
 // Get all favorites for a user
 export function subscribeToFavorites(userId: string, callback: (favorites: Property[]) => void) {
-  console.log('👂 Subscribing to favorites for user:', userId);
-  
   const q = query(
     collection(db, 'favorites'),
     where('userId', '==', userId)
   );
-  
   return onSnapshot(q, (snapshot) => {
     try {
       const favorites: Property[] = snapshot.docs.map(doc => {
         const data = doc.data() as DocumentData;
-        // Use the original property data
         return data.property as Property;
       });
-      
-      console.log('📱 Favorites updated:', favorites.length, 'items');
       callback(favorites);
     } catch (error) {
       console.error('❌ Error processing favorites:', error);
@@ -93,11 +78,10 @@ export function subscribeToFavorites(userId: string, callback: (favorites: Prope
   });
 }
 
-// Toggle favorite status
+// Toggle favorite status (add or remove one instance)
 export async function toggleFavorite(userId: string, property: Property): Promise<boolean> {
   try {
     const isFav = await isFavorite(userId, property.id);
-    
     if (isFav) {
       return await removeFromFavorites(userId, property.id);
     } else {

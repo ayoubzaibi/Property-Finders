@@ -6,6 +6,7 @@ import { ActivityIndicator, Alert, FlatList, Image, StyleSheet, Text, TouchableO
 import { useFavorites } from '../../hooks/useFavorites';
 import { Property } from '../../services/propertyService';
 import { useSession } from '../context';
+import PropertyCard from '@/components/PropertyCard';
 
 export default function FavoritesScreen() {
   const router = useRouter();
@@ -57,11 +58,7 @@ export default function FavoritesScreen() {
           onPress={() => handleFavoritePress(item)}
           disabled={favoritesLoading}
         >
-          <Ionicons 
-            name="heart" 
-            size={24} 
-            color="#ff4757" 
-          />
+          <Text><Ionicons name="heart" size={24} color="#ff4757" /></Text>
         </TouchableOpacity>
       </View>
       <View style={styles.info}>
@@ -90,24 +87,7 @@ export default function FavoritesScreen() {
 
   if (loading) {
     return (
-      <LinearGradient
-        colors={["#667eea", "#764ba2"]}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.headerTitle}>Favorites</Text>
-            <Text style={styles.headerSubtitle}>Your saved properties</Text>
-          </View>
-          <Ionicons name="person-circle" size={36} color="#fff" style={styles.headerAvatar} />
-        </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#fff" />
-          <Text style={styles.loadingText}>Loading favorites...</Text>
-        </View>
-      </LinearGradient>
+      <PropertyCard />
     );
   }
 
