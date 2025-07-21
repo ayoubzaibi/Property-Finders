@@ -3,14 +3,13 @@ import QuickFilters from '@/components/QuickFilters';
 import SearchFilters from '@/components/SearchFilters';
 import SearchHeader from '@/components/SearchHeader';
 import { LinearGradient } from 'expo-linear-gradient';
-
-import {  useState } from 'react';
+import { useState } from 'react';
 import { FlatList, StyleSheet, Text } from 'react-native';
+import Colors from '../../constants/Colors';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useProperties } from '../../hooks/useProperties';
 
 export default function SearchScreen() {
-  
   const [query, setQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({ minPrice: '', maxPrice: '', bedrooms: '', bathrooms: '', propertyType: '', squareFootage: '', yearBuilt: '' });
@@ -24,7 +23,7 @@ export default function SearchScreen() {
   };
 
   return (
-    <LinearGradient colors={["#667eea", "#764ba2"]} style={styles.gradient}>
+    <LinearGradient colors={[Colors.background, Colors.card]} style={styles.gradient}>
       <SearchHeader
         value={query}
         onChange={setQuery}
@@ -64,6 +63,6 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
   listContent: { paddingVertical: 30, paddingTop: 0 },
-  emptyText: { color: '#fff', textAlign: 'center', marginTop: 40, fontSize: 16 },
+  emptyText: { color: Colors.textMuted, textAlign: 'center', marginTop: 40, fontSize: 16 },
 });
 

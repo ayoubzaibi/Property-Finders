@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { updateProfile } from 'firebase/auth';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import Colors from '../../constants/Colors';
 import { signUp } from '../../services/authService';
 
 export default function Register() {
@@ -81,7 +82,7 @@ export default function Register() {
         >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <LinearGradient
-                    colors={['#667eea', '#764ba2']}
+                    colors={[Colors.background, Colors.card]}
                     style={styles.container}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
@@ -109,7 +110,7 @@ export default function Register() {
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter your full name"
-                                            placeholderTextColor="#999"
+                                            placeholderTextColor={Colors.textMuted}
                                             value={displayName}
                                             onChangeText={setDisplayName}
                                             autoCapitalize="words"
@@ -121,7 +122,7 @@ export default function Register() {
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter your email"
-                                            placeholderTextColor="#999"
+                                            placeholderTextColor={Colors.textMuted}
                                             keyboardType="email-address"
                                             autoCapitalize="none"
                                             value={email}
@@ -134,7 +135,7 @@ export default function Register() {
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Create a password"
-                                            placeholderTextColor="#999"
+                                            placeholderTextColor={Colors.textMuted}
                                             secureTextEntry
                                             value={password}
                                             onChangeText={setPassword}
@@ -146,7 +147,7 @@ export default function Register() {
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Confirm your password"
-                                            placeholderTextColor="#999"
+                                            placeholderTextColor={Colors.textMuted}
                                             secureTextEntry
                                             value={confirmPassword}
                                             onChangeText={setConfirmPassword}
@@ -159,7 +160,7 @@ export default function Register() {
                                         disabled={loading}
                                     >
                                         {loading ? (
-                                            <ActivityIndicator color="#fff" size="small" />
+                                            <ActivityIndicator color={Colors.background} size="small" />
                                         ) : (
                                             <Text style={styles.registerButtonText}>Create Account</Text>
                                         )}
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     },
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.1)',
+        backgroundColor: 'rgba(0,0,0,0.18)',
     },
     content: {
         flex: 1,
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: 'rgba(255,255,255,0.2)',
+        backgroundColor: Colors.card,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
@@ -223,12 +224,12 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 32,
         fontWeight: '700',
-        color: '#fff',
+        color: Colors.accent,
         marginBottom: 10,
     },
     subtitle: {
         fontSize: 16,
-        color: 'rgba(255,255,255,0.9)',
+        color: Colors.textMuted,
         textAlign: 'center',
         marginBottom: 20,
     },
@@ -239,18 +240,18 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     inputLabel: {
-        color: '#fff',
+        color: Colors.text,
         marginBottom: 5,
         fontWeight: '600',
     },
     input: {
-        backgroundColor: 'rgba(255,255,255,0.2)',
+        backgroundColor: Colors.card,
         borderRadius: 8,
         padding: 12,
-        color: '#fff',
+        color: Colors.text,
     },
     registerButton: {
-        backgroundColor: '#667eea',
+        backgroundColor: Colors.accent,
         borderRadius: 8,
         paddingVertical: 12,
         alignItems: 'center',
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
         opacity: 0.6,
     },
     registerButtonText: {
-        color: '#fff',
+        color: Colors.background,
         fontWeight: '700',
         fontSize: 16,
     },
@@ -271,7 +272,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     errorText: {
-        color: '#fff',
+        color: Colors.text,
         fontWeight: '600',
     },
     footerSection: {

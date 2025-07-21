@@ -2,7 +2,8 @@ import { router } from 'expo-router';
 import { signOut as firebaseSignOut, onAuthStateChanged, signInWithEmailAndPassword, User } from 'firebase/auth';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 import { auth } from './config/firebase';
-import useStorageState from './useStorageState';
+
+
 
 type SessionContextType = {
   user: User | null;
@@ -24,7 +25,6 @@ export function useSession() {
 export default function SessionProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
-  const [[flagLoading, signedInFlag], setSignedInFlag] = useStorageState('signedIn');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -34,21 +34,11 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     return () => unsubscribe();
   }, []);
 
-  // On mount, if not signed in, sign out from Firebase (for true logout persistence)
-  useEffect(() => {
-    if (signedInFlag !== 'true' && user && !flagLoading ) {
-      firebaseSignOut(auth);
-      setUser(null);
-    }
-    
-  }, [signedInFlag,user,flagLoading]);
-
   const signIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      setSignedInFlag('true');
       setLoading(false);
-      router.push('/Home');
+      router.push('/(tabs)/Home');
     } catch (error) {
       console.error('Sign in error:', error);
       throw error;
@@ -57,9 +47,8 @@ export default function SessionProvider({ children }: PropsWithChildren) {
 
   const signOut = () => {
     firebaseSignOut(auth);
-    setSignedInFlag(null);
     setUser(null);
-    router.push('/Login');
+    router.push('/(auth)/Welcome');
     setLoading(false);
   };
 

@@ -5,8 +5,9 @@ import QuickFilters from '@/components/QuickFilters';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text } from 'react-native';
+import Colors from '../../constants/Colors';
 import { useFavorites } from '../../hooks/useFavorites';
-import { useProperties } from '../../hooks/useProperties'; 
+import { useProperties } from '../../hooks/useProperties';
 
 export default function HomeScreen() {
   const [showQuickFilters, setShowQuickFilters] = useState(false);
@@ -29,7 +30,7 @@ export default function HomeScreen() {
   if (loading) return <PropertyCard />;
 
   return (
-    <LinearGradient colors={["#667eea", "#764ba2"]} style={styles.gradient}>
+    <LinearGradient colors={[Colors.background, Colors.card]} style={styles.gradient}>
       <HomeHeader onFilterPress={() => setShowQuickFilters(v => !v)} />
       {showQuickFilters && (
         <QuickFilters
@@ -60,5 +61,5 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
   listContent: { paddingVertical: 30, paddingTop: 0 },
-  emptyText: { color: '#fff', textAlign: 'center', marginTop: 40, fontSize: 16 },
+  emptyText: { color: Colors.textMuted, textAlign: 'center', marginTop: 40, fontSize: 16 },
 });

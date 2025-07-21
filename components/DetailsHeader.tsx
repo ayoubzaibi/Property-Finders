@@ -18,7 +18,7 @@ export default function DetailsHeader({ onBack, isFavorite, loading, onFavorite 
       </TouchableOpacity>
     </View>
   );
-}
+} 
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 20, paddingBottom: 16, paddingHorizontal: 16, backgroundColor: 'transparent' },

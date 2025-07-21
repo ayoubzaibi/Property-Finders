@@ -19,7 +19,7 @@ export default function SearchFilters({ filters, setFilters, onClear }: {
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {filterFields.map(f => (
           <View key={f.key} style={styles.field}>
-            <Text style={styles.label}>{f.label}</Text>
+            <Text style={styles.label}>{f.label}</Text> 
             <TextInput
               style={styles.input}
               placeholder={f.placeholder}

@@ -14,8 +14,6 @@ function useAsyncState<T>(
   ) as UseStateHook<T>;
 }
 
-
-
 export default function useStorageState(key: string): UseStateHook<string> {
   const [state, setState] = useAsyncState<string>();
 

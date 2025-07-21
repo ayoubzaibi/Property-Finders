@@ -1,22 +1,21 @@
+import PropertyCard from '@/components/PropertyCard';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {  Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Colors from '../../constants/Colors';
 import { useFavorites } from '../../hooks/useFavorites';
 import { Property } from '../../services/propertyService';
 import { useSession } from '../context';
-import PropertyCard from '@/components/PropertyCard';
 
 export default function FavoritesScreen() {
   const router = useRouter();
   const { user } = useSession();
-  const { favorites, toggleFavorite, loading: favoritesLoading } = useFavorites();
+  const { favorites, toggleFavorite, checkIsFavorite, isLoading } = useFavorites();
   const [loading, setLoading] = useState(true);
-  const [error] = useState<string | null>(null);
 
   useEffect(() => {
-    // Set loading to false after a short delay to show the favorites
     const timer = setTimeout(() => {
       setLoading(false);
     }, 500);
@@ -43,6 +42,7 @@ export default function FavoritesScreen() {
   };
 
   const handlePropertyPress = (propertyId: string) => {
+    Alert.alert('Debug', `Navigating to Details with propertyId: ${propertyId}`);
     router.push(`/Details?propertyId=${propertyId}`);
   };
 
@@ -56,15 +56,19 @@ export default function FavoritesScreen() {
         <TouchableOpacity 
           style={styles.favoriteIcon} 
           onPress={() => handleFavoritePress(item)}
-          disabled={favoritesLoading}
+          disabled={isLoading(item.id)}
         >
-          <Text><Ionicons name="heart" size={24} color="#ff4757" /></Text>
+          {isLoading(item.id) ? (
+            <Ionicons name="reload" size={24} color={Colors.accent} />
+          ) : (
+            <Ionicons name={checkIsFavorite(item.id) ? 'heart' : 'heart-outline'} size={24} color={Colors.accent} />
+          )}
         </TouchableOpacity>
       </View>
       <View style={styles.info}>
         <Text style={styles.price}>${item.price.toLocaleString()}</Text>
         <View style={styles.addressRow}>
-          <Ionicons name="location-outline" size={16} color="#764ba2" />
+          <Ionicons name="location-outline" size={16} color={Colors.accent2} />
           <Text style={styles.address}>{item.address}</Text>
         </View>
         {item.bedrooms && item.bathrooms && (
@@ -94,7 +98,7 @@ export default function FavoritesScreen() {
   if (!user) {
     return (
       <LinearGradient
-        colors={["#667eea", "#764ba2"]}
+        colors={[Colors.background, Colors.card]}
         style={styles.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -104,10 +108,10 @@ export default function FavoritesScreen() {
             <Text style={styles.headerTitle}>Favorites</Text>
             <Text style={styles.headerSubtitle}>Your saved properties</Text>
           </View>
-          <Ionicons name="person-circle" size={36} color="#fff" style={styles.headerAvatar} />
+          <Ionicons name="person-circle" size={36} color={Colors.accent2} style={styles.headerAvatar} />
         </View>
         <View style={styles.emptyContainer}>
-          <Ionicons name="heart-outline" size={64} color="rgba(255,255,255,0.6)" />
+          <Ionicons name="heart-outline" size={64} color={Colors.textMuted} />
           <Text style={styles.emptyText}>Please log in to view favorites</Text>
           <Text style={styles.emptySubtext}>Sign in to save and view your favorite properties</Text>
         </View>
@@ -115,35 +119,9 @@ export default function FavoritesScreen() {
     );
   }
 
-  if (error) {
-    return (
-      <LinearGradient
-        colors={["#667eea", "#764ba2"]}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.headerTitle}>Favorites</Text>
-            <Text style={styles.headerSubtitle}>Your saved properties</Text>
-          </View>
-          <Ionicons name="person-circle" size={36} color="#fff" style={styles.headerAvatar} />
-        </View>
-        <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={64} color="rgba(255,255,255,0.6)" />
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryButton}>
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
-    );
-  }
-
   return (
     <LinearGradient
-      colors={["#667eea", "#764ba2"]}
+      colors={[Colors.background, Colors.card]}
       style={styles.gradient}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -153,11 +131,11 @@ export default function FavoritesScreen() {
           <Text style={styles.headerTitle}>Favorites</Text>
           <Text style={styles.headerSubtitle}>Your saved properties</Text>
         </View>
-        <Ionicons name="person-circle" size={36} color="#fff" style={styles.headerAvatar} />
+        <Ionicons name="person-circle" size={36} color={Colors.accent2} style={styles.headerAvatar} />
       </View>
       {favorites.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="heart-outline" size={64} color="rgba(255,255,255,0.6)" />
+          <Ionicons name="heart-outline" size={64} color={Colors.textMuted} />
           <Text style={styles.emptyText}>No favorites yet</Text>
           <Text style={styles.emptySubtext}>Start exploring properties and save your favorites</Text>
         </View>
@@ -175,102 +153,22 @@ export default function FavoritesScreen() {
 }
 
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 20,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: 'transparent',
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 2,
-    letterSpacing: 0.5,
-  },
-  headerSubtitle: {
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  headerAvatar: {
-    marginLeft: 12,
-    fontSize: 32,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#fff',
-    fontSize: 15,
-    marginTop: 12,
-    fontWeight: '500',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  emptyText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 12,
-    marginBottom: 6,
-  },
-  emptySubtext: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 13,
-    textAlign: 'center',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  errorText: {
-    color: '#fff',
-    fontSize: 15,
-    textAlign: 'center',
-    marginTop: 12,
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  card: {
-    width: '100%',
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-    marginBottom: 20,
-    elevation: 6,
-    shadowColor: '#764ba2',
-    shadowOpacity: 0.13,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-  },
+  gradient: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 20, paddingBottom: 10, paddingHorizontal: 16, backgroundColor: 'transparent' },
+  headerLeft: { flex: 1 },
+  headerTitle: { color: Colors.accent, fontSize: 20, fontWeight: 'bold', marginBottom: 2, letterSpacing: 0.5 },
+  headerSubtitle: { color: Colors.textMuted, fontSize: 12, fontWeight: '500' },
+  headerAvatar: { marginLeft: 12, fontSize: 32 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { color: Colors.text, fontSize: 15, marginTop: 12, fontWeight: '500' },
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
+  emptyText: { color: Colors.text, fontSize: 16, fontWeight: '600', marginTop: 12, marginBottom: 6 },
+  emptySubtext: { color: Colors.textMuted, fontSize: 13, textAlign: 'center' },
+  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
+  errorText: { color: Colors.text, fontSize: 15, textAlign: 'center', marginTop: 12, marginBottom: 16 },
+  retryButton: { backgroundColor: Colors.card, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
+  retryButtonText: { color: Colors.text, fontSize: 15, fontWeight: '600' },
+  card: { width: '100%', borderRadius: 16, overflow: 'hidden', backgroundColor: Colors.card, marginBottom: 20, elevation: 6, shadowColor: Colors.background, shadowOpacity: 0.13, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
   imageContainer: {
     width: '100%',
     height: 140,
@@ -296,7 +194,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#764ba2',
+    color: Colors.accent,
     marginBottom: 6,
   },
   addressRow: {
@@ -306,7 +204,7 @@ const styles = StyleSheet.create({
   },
   address: {
     fontSize: 14,
-    color: '#444',
+    color: Colors.text,
     fontWeight: '500',
   },
   detailsRow: {
@@ -315,18 +213,18 @@ const styles = StyleSheet.create({
   },
   detailsText: {
     fontSize: 13,
-    color: '#666',
+    color: Colors.textMuted,
     fontWeight: '500',
   },
   detailsButton: {
-    backgroundColor: '#667eea',
+    backgroundColor: Colors.accent,
     borderRadius: 8,
     paddingVertical: 8,
     alignItems: 'center',
     marginTop: 4,
   },
   detailsButtonText: {
-    color: '#fff',
+    color: Colors.text,
     fontWeight: '700',
     fontSize: 14,
     letterSpacing: 0.5,

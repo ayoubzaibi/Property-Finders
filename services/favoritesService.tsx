@@ -2,7 +2,7 @@ import { addDoc, collection, deleteDoc, DocumentData, getDocs, onSnapshot, query
 import { db } from '../app/config/firebase';
 import { Property } from './propertyService';
 
-// Add a property to favorites (allow duplicates)
+
 export async function addToFavorites(userId: string, property: Property): Promise<boolean> {
   try {
     await addDoc(collection(db, 'favorites'), {
@@ -18,7 +18,7 @@ export async function addToFavorites(userId: string, property: Property): Promis
   }
 }
 
-// Remove a property from favorites (remove one instance)
+
 export async function removeFromFavorites(userId: string, propertyId: string): Promise<boolean> {
   try {
     const q = query(
@@ -28,7 +28,6 @@ export async function removeFromFavorites(userId: string, propertyId: string): P
     );
     const snapshot = await getDocs(q);
     if (!snapshot.empty) {
-      // Remove only the first found instance
       await deleteDoc(snapshot.docs[0].ref);
       return true;
     }
@@ -39,7 +38,6 @@ export async function removeFromFavorites(userId: string, propertyId: string): P
   }
 }
 
-// Check if a property is in favorites (at least one instance)
 export async function isFavorite(userId: string, propertyId: string): Promise<boolean> {
   try {
     const q = query(
@@ -55,7 +53,6 @@ export async function isFavorite(userId: string, propertyId: string): Promise<bo
   }
 }
 
-// Get all favorites for a user
 export function subscribeToFavorites(userId: string, callback: (favorites: Property[]) => void) {
   const q = query(
     collection(db, 'favorites'),
@@ -73,13 +70,13 @@ export function subscribeToFavorites(userId: string, callback: (favorites: Prope
       callback([]);
     }
   }, (error) => {
-    console.error('❌ Firestore subscription error:', error);
+    // Improved error logging for Firestore transport errors
+    console.error('❌ Firestore subscription error:', error.code, error.message, error);
     callback([]);
   });
 }
 
-// Toggle favorite status (add or remove one instance)
-export async function toggleFavorite(userId: string, property: Property): Promise<boolean> {
+  export async function toggleFavorite(userId: string, property: Property): Promise<boolean> {
   try {
     const isFav = await isFavorite(userId, property.id);
     if (isFav) {

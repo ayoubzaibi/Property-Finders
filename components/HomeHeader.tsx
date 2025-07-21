@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeHeader({ onFilterPress }: { onFilterPress: () => void }) {
@@ -11,7 +12,7 @@ export default function HomeHeader({ onFilterPress }: { onFilterPress: () => voi
       <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
         <Ionicons name="options" size={24} color="#fff" />
       </TouchableOpacity>
-      <Ionicons name="person-circle" size={36} color="#fff" style={styles.headerAvatar} />
+      <Ionicons name="person-circle" size={36} color="#fff" style={styles.headerAvatar} onPress={()=>router.push('/(auth)/Welcome')} /> 
     </View>
   );
 }
@@ -25,6 +26,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     paddingHorizontal: 16,
     backgroundColor: 'transparent',
+    marginTop:20
   },
   headerLeft: { flex: 1 },
   headerTitle: { color: '#fff', fontSize: 20, fontWeight: 'bold', marginBottom: 2, letterSpacing: 0.5 },

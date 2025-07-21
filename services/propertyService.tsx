@@ -1,16 +1,23 @@
 
 const getApiBaseUrl = () => {
-  if (__DEV__) {
-    return 'http://10.205.9.64:3000/api/v1/properties';
-  }
+  if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
+  if (__DEV__) return 'http://10.205.9.64:3000/api/v1/properties';
   return 'http://localhost:3000/api/v1/properties';
 };
-
 const API_BASE_URL = getApiBaseUrl();
 
-
-console.log('🔧 API_BASE_URL configured as:', API_BASE_URL);
-console.log('🔧 __DEV__ is:', __DEV__);
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+}
 
 export type Property = {
   id: string;
@@ -29,147 +36,68 @@ export type Property = {
   amenities?: string[];
 };
 
+const devLog = (...args: any[]) => { if (__DEV__) console.log(...args); };
 
 export async function testServerConnection(): Promise<{ success: boolean; message: string; url: string }> {
   try {
-    console.log('🧪 Testing server connection to:', API_BASE_URL);
-    console.log('🧪 Full test URL:', `${API_BASE_URL}?page=1&limit=2`);
-    
-    
-    try {
-      const healthUrl = `${API_BASE_URL.replace('/api/v1/properties', '')}/health`;
-      console.log('Health check URL:', healthUrl);
-      const healthResponse = await fetch(healthUrl, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-      });
-      console.log('🧪 Health check status:', healthResponse.status);
-    } catch (healthError) {
-      console.log('🧪 Health check failed (this is normal if endpoint doesn\'t exist):', healthError);
-    }
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      console.log('⏰ Server test timeout - aborting');
-      controller.abort();
-    }, 10000); 
-
-    
-    const testUrl = `${API_BASE_URL}?page=1&limit=2`;
-    console.log('🌐 Making fetch request to:', testUrl);
-    const response = await fetch(testUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    console.log('📡 Response status:', response.status);
-    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-
+    devLog('🧪 Testing server connection to:', API_BASE_URL);
+    const healthUrl = `${API_BASE_URL.replace('/api/v1/properties', '')}/health`;
+    try { await fetchWithTimeout(healthUrl, { method: 'GET' }, 3000); } catch {}
+    const response = await fetchWithTimeout(`${API_BASE_URL}?page=1&limit=2`, { method: 'GET', headers: { 'Accept': 'application/json' } }, 5000);
     if (response.ok) {
-      const responseText = await response.text();
-      console.log('✅ Server test successful. Response length:', responseText.length);
-      console.log('✅ Response preview:', responseText.substring(0, 200) + '...');
-      return {
-        success: true,
-        message: `Server is reachable and responding (${response.status})`,
-        url: API_BASE_URL
-      };
+      return { success: true, message: `Server is reachable (${response.status})`, url: API_BASE_URL };
     } else {
-      const errorText = await response.text();
-      console.log('❌ Server error response:', errorText);
-      return {
-        success: false,
-        message: `Server responded with status: ${response.status} - ${errorText}`,
-        url: API_BASE_URL
-      };
+      return { success: false, message: `Server responded with status: ${response.status}`, url: API_BASE_URL };
     }
   } catch (error: any) {
-    console.error('💥 Server connection test failed:', error);
-    console.error('💥 Error type:', typeof error);
-    console.error('💥 Error name:', error.name);
-    console.error('💥 Error message:', error.message);
-    console.error('💥 Error stack:', error.stack);
-    
     let message = 'Unknown error';
-    if (error instanceof TypeError && error.message?.includes('Network request failed')) {
-      message = 'Network error - server might not be running or wrong IP address';
-    } else if (error.name === 'AbortError') {
-      message = 'Request timeout - server is not responding (check if server is running)';
-    } else {
-      message = error.message || 'Connection failed';
-    }
-    
-    return {
-      success: false,
-      message,
-      url: API_BASE_URL
-    };
+    if (error instanceof TypeError && error.message?.includes('Network request failed')) message = 'Network error - server might not be running or wrong IP address';
+    else if (error.name === 'AbortError') message = 'Request timeout - server is not responding';
+    else message = error.message || 'Connection failed';
+    return { success: false, message, url: API_BASE_URL };
   }
 }
 
-
 export async function findWorkingServer(): Promise<{ success: boolean; workingUrl: string | null; message: string }> {
   const testUrls = [
-    'http://192.168.242.142:3000/api/v1/properties', 
-    'http://localhost:3000/api/v1/properties',      
-    'http://127.0.0.1:3000/api/v1/properties',     
-    'http://10.0.2.2:3000/api/v1/properties',      
-  ];
-
-  console.log('Testing multiple server URLs...');
-
+    process.env.EXPO_PUBLIC_API_URL,
+    'http://192.168.242.142:3000/api/v1/properties',
+    'http://localhost:3000/api/v1/properties',
+    'http://127.0.0.1:3000/api/v1/properties',
+    'http://10.0.2.2:3000/api/v1/properties',
+  ].filter(Boolean) as string[];
   for (const url of testUrls) {
     try {
-      console.log(`Testing: ${url}`);
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        console.log(`Timeout for ${url}`);
-        controller.abort();
-      }, 8000); 
-
-        const response = await fetch(`${url}?page=1&limit=2`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        console.log(`✅ Working server found: ${url}`);
-        return {
-          success: true,
-          workingUrl: url,
-          message: `Found working server at: ${url}`
-        };
-      } else {
-        console.log(`❌ Server responded with status: ${response.status} for ${url}`);
-      }
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.log(`⏰ Timeout for ${url}`);
-      } else {
-        console.log(`❌ Failed to connect to ${url}:`, error.message);
-      }
-    }
+      const response = await fetchWithTimeout(`${url}?page=1&limit=2`, { method: 'GET', headers: { 'Accept': 'application/json' } }, 4000);
+      if (response.ok) return { success: true, workingUrl: url, message: `Found working server at: ${url}` };
+    } catch {}
   }
+  return { success: false, workingUrl: null, message: 'No working server found. Please check if your server is running on port 3000.' };
+}
 
-  console.log('❌ No working server found');
-  return {
-    success: false,
-    workingUrl: null,
-    message: 'No working server found. Please check if your server is running on port 3000.'
-  };
+function parsePropertiesResponse(data: any): Property[] {
+  if (data.success && data.data && data.data.properties) return data.data.properties;
+  if (data.properties) return data.properties;
+  if (data.items && Array.isArray(data.items)) {
+    return data.items.map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      address: `${item.address}, ${item.city}, ${item.state} ${item.zipCode}`,
+      photos: item.images || [],
+      location: `${item.city}, ${item.state}`,
+      bedrooms: item.bedrooms,
+      bathrooms: item.bathrooms,
+      propertyType: item.propertyType,
+      squareFootage: item.squareFootage,
+      yearBuilt: item.yearBuilt,
+      status: item.isAvailable ? 'Available' : 'Not Available',
+      description: item.description,
+      amenities: item.amenities || [],
+    }));
+  }
+  if (Array.isArray(data)) return data;
+  throw new Error('Unexpected response format from server');
 }
 
 export async function fetchProperties(params: {
@@ -181,14 +109,10 @@ export async function fetchProperties(params: {
   bedrooms?: number;
   bathrooms?: number;
   propertyType?: string;
+  search?: string;
 } = {}): Promise<Property[]> {
   try {
-    console.log('🏠 Fetching properties with params:', params);
-    console.log('🏠 API_BASE_URL:', API_BASE_URL);
-    
     const queryParams = new URLSearchParams();
-    
-  
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.limit) queryParams.append('limit', params.limit.toString());
     if (params.location) queryParams.append('location', params.location);
@@ -197,108 +121,14 @@ export async function fetchProperties(params: {
     if (params.bedrooms) queryParams.append('bedrooms', params.bedrooms.toString());
     if (params.bathrooms) queryParams.append('bathrooms', params.bathrooms.toString());
     if (params.propertyType) queryParams.append('propertyType', params.propertyType);
-
+    if (params.search) queryParams.append('search', params.search);
     const url = `${API_BASE_URL}?${queryParams.toString()}`;
-    console.log('🌐 Making request to:', url);
-
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      console.log('⏰ Request timeout - aborting');
-      controller.abort();
-    }, 15000); 
-
-    console.log('📡 Sending fetch request...');
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-    console.log('📡 Response received. Status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ HTTP error response:', errorText);
-      throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-    }
-
-    const responseText = await response.text();
-    console.log('📄 Raw response length:', responseText.length);
-    console.log('📄 Raw response preview:', responseText.substring(0, 200) + '...');
-
-    let data: any;
-    try {
-      data = JSON.parse(responseText);
-      console.log('✅ JSON parsed successfully');
-    } catch (parseError) {
-      console.error('❌ Failed to parse JSON response:', parseError);
-      console.error('❌ Response text:', responseText);
-      throw new Error('Invalid JSON response from server');
-    }
-
-    
-    let properties: Property[] = [];
-    
-    if (data.success && data.data && data.data.properties) {
-      
-      properties = data.data.properties;
-      console.log('📋 Using success.data.properties format');
-    } else if (data.properties) {
-      
-      properties = data.properties;
-      console.log('📋 Using properties format');
-    } else if (data.items && Array.isArray(data.items)) {
-      
-      properties = data.items.map((item: any) => ({
-        id: item.id,
-        title: item.title,
-        price: item.price,
-        address: `${item.address}, ${item.city}, ${item.state} ${item.zipCode}`,
-        photos: item.images || [],
-        location: `${item.city}, ${item.state}`,
-        bedrooms: item.bedrooms,
-        bathrooms: item.bathrooms,
-        propertyType: item.propertyType,
-        squareFootage: item.squareFootage,
-        yearBuilt: item.yearBuilt,
-        status: item.isAvailable ? 'Available' : 'Not Available',
-        description: item.description,
-        amenities: item.amenities || [],
-      }));
-      console.log('📋 Using items format (your server format)');
-    } else if (Array.isArray(data)) {
-      
-      properties = data;
-      console.log('📋 Using direct array format');
-    } else {
-      console.error('❌ Unexpected response format:', data);
-      throw new Error('Unexpected response format from server');
-    }
-
-    console.log('✅ Properties fetched successfully:', properties.length);
-    return properties;
+    const response = await fetchWithTimeout(url, { method: 'GET', headers: { 'Accept': 'application/json' } }, 15000);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    return parsePropertiesResponse(data);
   } catch (error: any) {
-    console.error('💥 Error fetching properties:', error);
-    console.error('💥 Error type:', typeof error);
-    console.error('💥 Error name:', error.name);
-    console.error('💥 Error message:', error.message);
-    console.error('💥 Error stack:', error.stack);
-    
-   
-    if (error instanceof TypeError && error.message?.includes('Network request failed')) {
-      console.log('🌐 Network error detected - server might not be running');
-      console.log('🌐 Please check if your server is running on http://localhost:3000');
-    } else if (error.name === 'AbortError') {
-      console.log('⏰ Request timeout - server might be slow or not responding');
-    }
-    
-    
-    console.log('🔄 Falling back to mock data');
+    devLog('💥 Error fetching properties:', error);
     return getMockProperties();
   }
 }
@@ -312,78 +142,18 @@ export async function searchProperties(query: string, filters: {
   bathrooms?: number;
   propertyType?: string;
 } = {}): Promise<Property[]> {
-  try {
-    console.log('Searching properties with query:', query, 'and filters:', filters);
-    
-    const searchParams = {
-      ...filters,
-      search: query,
-    };
-
-    return await fetchProperties(searchParams);
-  } catch (error) {
-    console.error('Error searching properties:', error);
-    throw error;
-  }
+  return fetchProperties({ ...filters, search: query });
 }
-
 
 export async function getPropertyDetails(propertyId: string): Promise<Property | null> {
   try {
-    console.log('🏠 Fetching property details for ID:', propertyId);
-    
     const url = `${API_BASE_URL}/${propertyId}`;
-    console.log('🌐 Making request to:', url);
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      console.log('⏰ Property details request timeout - aborting');
-      controller.abort();
-    }, 10000);
-
-    console.log('📡 Sending fetch request for property details...');
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-    console.log('📡 Property details response received. Status:', response.status);
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Property details HTTP error response:', errorText);
-      throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-    }
-
-    const responseText = await response.text();
-    console.log('📄 Property details raw response length:', responseText.length);
-    console.log('📄 Property details raw response preview:', responseText.substring(0, 200) + '...');
-
-    let data: any;
-    try {
-      data = JSON.parse(responseText);
-      console.log('✅ Property details JSON parsed successfully');
-    } catch (parseError) {
-      console.error('❌ Failed to parse property details JSON response:', parseError);
-      console.error('❌ Response text:', responseText);
-      throw new Error('Invalid JSON response from server');
-    }
-
-    
-    let property: Property | null = null;
-    
-    if (data.success && data.data) {
-      
-      property = data.data;
-      console.log('📋 Using success.data format for property details');
-    } else if (data.id) {
-      
-      property = {
+    const response = await fetchWithTimeout(url, { method: 'GET', headers: { 'Accept': 'application/json' } }, 10000);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    if (data.success && data.data) return data.data;
+    if (data.id) {
+      return {
         id: data.id,
         title: data.title,
         price: data.price,
@@ -399,35 +169,13 @@ export async function getPropertyDetails(propertyId: string): Promise<Property |
         description: data.description,
         amenities: data.amenities || [],
       };
-      console.log('📋 Using direct property format (converted from your server format)');
-    } else {
-      console.error('❌ Unexpected property details response format:', data);
-      throw new Error('Unexpected response format from server');
     }
-
-    console.log('✅ Property details fetched successfully:', property?.id);
-    return property;
+    throw new Error('Unexpected response format from server');
   } catch (error: any) {
-    console.error('💥 Error fetching property details:', error);
-    console.error('💥 Error type:', typeof error);
-    console.error('💥 Error name:', error.name);
-    console.error('💥 Error message:', error.message);
-    console.error('💥 Error stack:', error.stack);
-    
-    // Check if it's a network error
-    if (error instanceof TypeError && error.message?.includes('Network request failed')) {
-      console.log('🌐 Network error detected - server might not be running');
-      console.log('🌐 Please check if your server is running on http://localhost:3000');
-    } else if (error.name === 'AbortError') {
-      console.log('⏰ Request timeout - server might be slow or not responding');
-    }
-    
+    devLog('💥 Error fetching property details:', error);
     throw error;
   }
 }
-
-
-
 
 function getMockProperties(): Property[] {
   return [
@@ -482,77 +230,14 @@ function getMockProperties(): Property[] {
   ];
 }
 
-
 export async function checkServerStatus(): Promise<{ running: boolean; message: string; suggestions: string[] }> {
   const suggestions: string[] = [];
-  
   try {
-    console.log('Checking if server is running...');
-    
-   
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
-
-    const response = await fetch(`${API_BASE_URL}?page=1&limit=2`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (response.ok) {
-      return {
-        running: true,
-        message: '✅ Server is running and responding',
-        suggestions: []
-      };
-    } else {
-      suggestions.push('Server is running but returned an error status');
-      suggestions.push('Check if your API endpoint is correct');
-      suggestions.push('Verify the response format');
-      
-      return {
-        running: true,
-        message: `⚠️ Server responded with status: ${response.status}`,
-        suggestions
-      };
-    }
+    const response = await fetchWithTimeout(`${API_BASE_URL}?page=1&limit=2`, { method: 'GET', headers: { 'Accept': 'application/json' } }, 3000);
+    if (response.ok) return { running: true, message: 'Server is running', suggestions };
+    return { running: false, message: `Server responded with status: ${response.status}`, suggestions };
   } catch (error: any) {
-    if (error.name === 'AbortError') {
-      suggestions.push('Server might be running but is very slow');
-      suggestions.push('Try increasing the timeout');
-      suggestions.push('Check server logs for performance issues');
-      
-      return {
-        running: false,
-        message: '⏰ Server connection timed out',
-        suggestions
-      };
-    } else if (error.message?.includes('Network request failed')) {
-      suggestions.push('Server is not running');
-      suggestions.push('Start your server with: npm start');
-      suggestions.push('Check if server is on port 3000');
-      suggestions.push('Verify the correct IP address');
-      
-      return {
-        running: false,
-        message: '❌ Server is not reachable',
-        suggestions
-      };
-    } else {
-      suggestions.push('Unknown connection error');
-      suggestions.push('Check server logs');
-      suggestions.push('Verify network configuration');
-      
-      return {
-        running: false,
-        message: `❌ Connection error: ${error.message}`,
-        suggestions
-      };
-    }
+    suggestions.push('Check if your server is running and accessible.');
+    return { running: false, message: error.message || 'Unknown error', suggestions };
   }
 }

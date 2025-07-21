@@ -18,7 +18,7 @@ export default function DetailsInfo({ property }: { property: any }) {
               <Ionicons name="bed-outline" size={20} color="#764ba2" />
               <Text style={styles.detailText}>{property.bedrooms} Bedrooms</Text>
             </View>
-          )}
+          )} 
           {property.bathrooms && (
             <View style={styles.detailItem}>
               <Ionicons name="water-outline" size={20} color="#764ba2" />
