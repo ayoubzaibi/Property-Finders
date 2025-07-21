@@ -3,7 +3,14 @@ import DetailsInfo from "@/components/DetailsInfo";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Colors from "../../constants/Colors";
 import { useFavorites } from "../../hooks/useFavorites";
 import { getPropertyDetails } from "../../services/propertyService";
@@ -44,7 +51,7 @@ export default function DetailsScreen() {
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
       <LinearGradient
         colors={[Colors.background, Colors.card]}
@@ -55,25 +62,32 @@ export default function DetailsScreen() {
         </View>
       </LinearGradient>
     );
-  if (error || !property)
+  }
+
+  if (error || !property) {
     return (
       <LinearGradient
         colors={[Colors.background, Colors.card]}
         style={styles.gradient}
       >
+        <DetailsHeader
+          onBack={router.back}
+          isFavorite={false}
+          loading={false}
+          onFavorite={() => {}}
+        />
         <View style={styles.center}>
-          <DetailsHeader
-            onBack={router.back}
-            isFavorite={false}
-            loading={false}
-            onFavorite={() => {}}
-          />
-          <View style={styles.error}>
-            <>{error || "Property not found"}</>
-          </View>
+          <Text style={styles.error}>{error || "Property not found"}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={loadPropertyDetails}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
         </View>
       </LinearGradient>
     );
+  }
 
   return (
     <LinearGradient
@@ -87,7 +101,11 @@ export default function DetailsScreen() {
         onFavorite={() => toggleFavorite(property)}
       />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <DetailsInfo property={property} />
+        <DetailsInfo
+          property={property}
+          isFavorite={checkIsFavorite(property.id)}
+          onFavorite={() => toggleFavorite(property)}
+        />
       </ScrollView>
     </LinearGradient>
   );
@@ -100,7 +118,17 @@ const styles = StyleSheet.create({
   error: {
     color: Colors.text,
     fontSize: 16,
-    marginTop: 40,
+    marginBottom: 16,
     textAlign: "center",
+  },
+  retryButton: {
+    backgroundColor: Colors.accent,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontWeight: "600",
   },
 });

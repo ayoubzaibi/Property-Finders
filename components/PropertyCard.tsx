@@ -1,71 +1,107 @@
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import Colors from '../constants/Colors';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Colors from "../constants/Colors";
+import type { Property } from "../services/propertyService";
 
-export default function PropertyCard() {
+interface PropertyCardProps {
+  property: Property;
+  onPress?: () => void;
+  onFavorite?: () => void;
+  isFavorite?: boolean;
+}
+
+export default function PropertyCard({
+  property,
+  onPress,
+  onFavorite,
+  isFavorite,
+}: PropertyCardProps) {
   return (
-    <LinearGradient
-      colors={[Colors.background, Colors.card]}
-      style={styles.gradient}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.8 : 1}
+      accessible
+      accessibilityLabel={`View details for ${
+        property.title || property.address
+      }`}
+      accessibilityHint="Navigates to the property details screen"
     >
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle}>Discover Properties</Text>
-          <Text style={styles.headerSubtitle}>Find your dream home today</Text>
-        </View>
-        <TouchableOpacity style={styles.testButton}>
-          <Ionicons name="bug-outline" size={24} color={Colors.accent} />
-        </TouchableOpacity>
-        <Ionicons name="person-circle" size={36} color={Colors.accent2} style={styles.headerAvatar} />
+      <Image
+        source={{
+          uri:
+            property.photos?.[0] ||
+            "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400",
+        }}
+        style={styles.image}
+        accessible
+        accessibilityLabel={`Image of ${property.title || property.address}`}
+      />
+      <View style={styles.info}>
+        <Text style={styles.title} numberOfLines={1}>
+          {property.title || property.address}
+        </Text>
+        <Text style={styles.price}>
+          ${property.price?.toLocaleString() || "N/A"}
+        </Text>
+        {onFavorite && (
+          <TouchableOpacity
+            onPress={onFavorite}
+            style={styles.favoriteBtn}
+            hitSlop={8}
+            accessible
+            accessibilityLabel={
+              isFavorite ? "Remove from favorites" : "Add to favorites"
+            }
+            accessibilityRole="button"
+          >
+            <Ionicons
+              name={isFavorite ? "heart" : "heart-outline"}
+              size={22}
+              color={isFavorite ? Colors.accent : Colors.textMuted}
+            />
+          </TouchableOpacity>
+        )}
       </View>
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.accent} />
-        <Text style={styles.loadingText}>Loading properties...</Text>
-      </View>
-    </LinearGradient>
+    </TouchableOpacity>
   );
 }
+
 const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
+  card: {
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+    marginBottom: 18,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
+  image: {
+    width: "100%",
+    height: 160,
+    backgroundColor: "#eee",
   },
-  headerLeft: {
-    flex: 1,
+  info: {
+    padding: 12,
+    position: "relative",
   },
-  headerTitle: {
+  title: {
+    fontSize: 15,
+    fontWeight: "600",
     color: Colors.accent,
-    fontWeight: '700',
+    marginBottom: 2,
+  },
+  price: {
     fontSize: 14,
-    letterSpacing: 0.5,
-  },
-  headerSubtitle: {
     color: Colors.textMuted,
-    fontSize: 12,
-    marginTop: 4,
+    fontWeight: "500",
   },
-  testButton: {
-    marginRight: 16,
-  },
-  headerAvatar: {
-    marginLeft: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: Colors.text,
-    fontSize: 16,
-    marginTop: 16,
+  favoriteBtn: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    padding: 4,
   },
 });

@@ -1,3 +1,4 @@
+import UserHeader from "@/components/UserHeader";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -26,18 +27,7 @@ export default function ProfileScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <Text style={styles.headerSubtitle}>Your account info</Text>
-        </View>
-        <Ionicons
-          name="person-circle"
-          size={36}
-          color={Colors.accent2}
-          style={styles.headerAvatar}
-        />
-      </View>
+      <UserHeader title="Profile" subtitle="Your account info" />
       <View style={styles.card}>
         <View style={styles.avatarContainer}>
           <Ionicons name="person-circle" size={80} color={Colors.accent2} />
@@ -56,13 +46,14 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  gradient: { flex: 1, justifyContent: "center", alignItems: "center" },
+  gradient: { flex: 1, alignItems: "center" },
   card: {
     width: "90%",
     backgroundColor: Colors.card,
     borderRadius: 16,
     padding: 24,
     alignItems: "center",
+    marginTop: 40, // extra space for header
     elevation: 6,
     shadowColor: Colors.background,
     shadowOpacity: 0.13,
@@ -88,27 +79,4 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   buttonText: { color: Colors.background, fontSize: 15, fontWeight: "700" },
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 20,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: "transparent",
-  },
-  headerLeft: { flex: 1 },
-  headerTitle: {
-    color: Colors.accent,
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 2,
-    letterSpacing: 0.5,
-  },
-  headerSubtitle: { color: Colors.textMuted, fontSize: 12, fontWeight: "500" },
-  headerAvatar: { marginLeft: 12, fontSize: 32 },
 });

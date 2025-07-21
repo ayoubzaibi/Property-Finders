@@ -1,58 +1,83 @@
-import HomeHeader from '@/components/HomeHeader';
-import PropertyCard from '@/components/PropertyCard';
-import PropertyListItem from '@/components/PropertyListItem';
-import QuickFilters from '@/components/QuickFilters';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text } from 'react-native';
-import Colors from '../../constants/Colors';
-import { useFavorites } from '../../hooks/useFavorites';
-import { useProperties } from '../../hooks/useProperties';
+import HomeHeader from "@/components/HomeHeader";
+
+import PropertyCard from "@/components/PropertyCard";
+import PropertyCardPlaceholder from "@/components/PropertyCardPlaceholder";
+import QuickFilters from "@/components/QuickFilters";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { FlatList, RefreshControl, StyleSheet, Text } from "react-native";
+import Colors from "../../constants/Colors";
+import { useFavorites } from "../../hooks/useFavorites";
+import { useProperties } from "../../hooks/useProperties";
 
 export default function HomeScreen() {
   const [showQuickFilters, setShowQuickFilters] = useState(false);
-  const [quickFilters, setQuickFilters] = useState({ propertyType: '', priceRange: '' });
-  const { properties, loading, refreshing, refresh } = useProperties({ autoLoad: true, initialParams: { limit: 20 } });
+  const [quickFilters, setQuickFilters] = useState({
+    propertyType: "",
+    priceRange: "",
+  });
+  const { properties, loading, refreshing, refresh } = useProperties({
+    autoLoad: true,
+    initialParams: { limit: 20 },
+  });
   const { toggleFavorite, checkIsFavorite, isLoading } = useFavorites();
+  const router = useRouter();
 
   const getFilteredProperties = () => {
-    if (!quickFilters.propertyType && !quickFilters.priceRange) return properties;
-    return properties.filter(property => {
-      if (quickFilters.propertyType && property.propertyType?.toLowerCase() !== quickFilters.propertyType.toLowerCase()) return false;
+    if (!quickFilters.propertyType && !quickFilters.priceRange)
+      return properties;
+    return properties.filter((property) => {
+      if (
+        quickFilters.propertyType &&
+        property.propertyType?.toLowerCase() !==
+          quickFilters.propertyType.toLowerCase()
+      )
+        return false;
       if (quickFilters.priceRange) {
-        const [minPrice, maxPrice] = quickFilters.priceRange.split('-').map(Number);
-        if (property.price < minPrice || property.price > maxPrice) return false;
+        const [minPrice, maxPrice] = quickFilters.priceRange
+          .split("-")
+          .map(Number);
+        if (property.price < minPrice || property.price > maxPrice)
+          return false;
       }
       return true;
     });
   };
 
-  if (loading) return <PropertyCard />;
+  if (loading) return <PropertyCardPlaceholder />;
 
   return (
-    <LinearGradient colors={[Colors.background, Colors.card]} style={styles.gradient}>
-      <HomeHeader onFilterPress={() => setShowQuickFilters(v => !v)} />
+    <LinearGradient
+      colors={[Colors.background, Colors.card]}
+      style={styles.gradient}
+    >
+      <HomeHeader onFilterPress={() => setShowQuickFilters((v) => !v)} />
       {showQuickFilters && (
         <QuickFilters
           quickFilters={quickFilters}
           setQuickFilters={setQuickFilters}
-          onClear={() => setQuickFilters({ propertyType: '', priceRange: '' })}
+          onClear={() => setQuickFilters({ propertyType: "", priceRange: "" })}
         />
       )}
       <FlatList
         data={getFilteredProperties()}
         renderItem={({ item }) => (
-          <PropertyListItem
+          <PropertyCard
             property={item}
-            isFavorite={checkIsFavorite(item.id)}
-            loading={isLoading(item.id)}
+            onPress={() => router.push(`/Details?propertyId=${item.id}`)}
             onFavorite={() => toggleFavorite(item)}
+            isFavorite={checkIsFavorite(item.id)}
           />
         )}
-        keyExtractor={item => item.id}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
+        keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={refresh} />
+        }
         contentContainerStyle={styles.listContent}
-        ListEmptyComponent={<Text style={styles.emptyText}>No properties found.</Text>}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No properties found.</Text>
+        }
       />
     </LinearGradient>
   );
@@ -61,5 +86,10 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
   listContent: { paddingVertical: 30, paddingTop: 0 },
-  emptyText: { color: Colors.textMuted, textAlign: 'center', marginTop: 40, fontSize: 16 },
+  emptyText: {
+    color: Colors.textMuted,
+    textAlign: "center",
+    marginTop: 40,
+    fontSize: 16,
+  },
 });
