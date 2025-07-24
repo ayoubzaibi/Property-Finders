@@ -1,5 +1,5 @@
-import { SplashScreen } from 'expo-router';
-import { useSession } from './context';
+import { SplashScreen } from "expo-router";
+import { useSession } from "./context";
 
 const SplashScreenController = () => {
   const { loading } = useSession();
@@ -8,4 +8,3 @@ const SplashScreenController = () => {
 };
 
 export default SplashScreenController;
-

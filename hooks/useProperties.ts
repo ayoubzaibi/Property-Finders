@@ -1,5 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchProperties, Property, searchProperties } from '../services/propertyService';
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  fetchProperties,
+  Property,
+  searchProperties,
+} from "../services/propertyService";
 
 interface UsePropertiesOptions {
   autoLoad?: boolean;
@@ -26,9 +30,11 @@ interface UsePropertiesReturn {
   clearError: () => void;
 }
 
-export function useProperties(options: UsePropertiesOptions = {}): UsePropertiesReturn {
+export function useProperties(
+  options: UsePropertiesOptions = {}
+): UsePropertiesReturn {
   const { autoLoad = true, initialParams = {} } = options;
-  
+
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(autoLoad);
   const [refreshing, setRefreshing] = useState(false);
@@ -40,58 +46,61 @@ export function useProperties(options: UsePropertiesOptions = {}): UseProperties
     try {
       setError(null);
       setLoading(true);
-      
+
       const data = await fetchProperties({
         limit: 20,
         ...initialParamsRef.current,
         ...params,
       });
-      
+
       setProperties(data);
       setHasLoaded(true);
     } catch (err) {
-      console.error('Failed to load properties:', err);
-      setError('Failed to load properties. Please try again.');
+      console.error("Failed to load properties:", err);
+      setError("Failed to load properties. Please try again.");
       // Don't throw the error to prevent infinite loops
     } finally {
       setLoading(false);
     }
   }, []); // Remove initialParams from dependencies
 
-  const searchPropertiesData = useCallback(async (query: string, filters: any = {}) => {
-    try {
-      setError(null);
-      setLoading(true);
-      
-      const data = await searchProperties(query, {
-        limit: 20,
-        ...filters,
-      });
-      
-      setProperties(data);
-    } catch (err) {
-      console.error('Search failed:', err);
-      setError('Search failed. Please try again.');
-      // Don't throw the error to prevent infinite loops
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const searchPropertiesData = useCallback(
+    async (query: string, filters: any = {}) => {
+      try {
+        setError(null);
+        setLoading(true);
+
+        const data = await searchProperties(query, {
+          limit: 20,
+          ...filters,
+        });
+
+        setProperties(data);
+      } catch (err) {
+        console.error("Search failed:", err);
+        setError("Search failed. Please try again.");
+        // Don't throw the error to prevent infinite loops
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const refresh = useCallback(async () => {
     try {
       setRefreshing(true);
       setError(null);
-      
+
       const data = await fetchProperties({
         limit: 20,
         ...initialParamsRef.current,
       });
-      
+
       setProperties(data);
     } catch (err) {
-      console.error('Refresh failed:', err);
-      setError('Refresh failed. Please try again.');
+      console.error("Refresh failed:", err);
+      setError("Refresh failed. Please try again.");
     } finally {
       setRefreshing(false);
     }
@@ -117,4 +126,4 @@ export function useProperties(options: UsePropertiesOptions = {}): UseProperties
     refresh,
     clearError,
   };
-} 
+}

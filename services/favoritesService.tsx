@@ -1,11 +1,22 @@
-import { addDoc, collection, deleteDoc, DocumentData, getDocs, onSnapshot, query, where } from 'firebase/firestore';
-import { db } from '../app/config/firebase';
-import { Property } from './propertyService';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  DocumentData,
+  getDocs,
+  onSnapshot,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "../app/config/firebase";
+import { Property } from "./propertyService";
 
-
-export async function addToFavorites(userId: string, property: Property): Promise<boolean> {
+export async function addToFavorites(
+  userId: string,
+  property: Property
+): Promise<boolean> {
   try {
-    await addDoc(collection(db, 'favorites'), {
+    await addDoc(collection(db, "favorites"), {
       userId,
       propertyId: property.id,
       property,
@@ -13,18 +24,20 @@ export async function addToFavorites(userId: string, property: Property): Promis
     });
     return true;
   } catch (error) {
-    console.error('❌ Error adding to favorites:', error);
+    console.error("❌ Error adding to favorites:", error);
     return false;
   }
 }
 
-
-export async function removeFromFavorites(userId: string, propertyId: string): Promise<boolean> {
+export async function removeFromFavorites(
+  userId: string,
+  propertyId: string
+): Promise<boolean> {
   try {
     const q = query(
-      collection(db, 'favorites'),
-      where('userId', '==', userId),
-      where('propertyId', '==', propertyId)
+      collection(db, "favorites"),
+      where("userId", "==", userId),
+      where("propertyId", "==", propertyId)
     );
     const snapshot = await getDocs(q);
     if (!snapshot.empty) {
@@ -33,50 +46,65 @@ export async function removeFromFavorites(userId: string, propertyId: string): P
     }
     return false;
   } catch (error) {
-    console.error('❌ Error removing from favorites:', error);
+    console.error("❌ Error removing from favorites:", error);
     return false;
   }
 }
 
-export async function isFavorite(userId: string, propertyId: string): Promise<boolean> {
+export async function isFavorite(
+  userId: string,
+  propertyId: string
+): Promise<boolean> {
   try {
     const q = query(
-      collection(db, 'favorites'),
-      where('userId', '==', userId),
-      where('propertyId', '==', propertyId)
+      collection(db, "favorites"),
+      where("userId", "==", userId),
+      where("propertyId", "==", propertyId)
     );
     const snapshot = await getDocs(q);
     return !snapshot.empty;
   } catch (error) {
-    console.error('❌ Error checking favorite status:', error);
+    console.error("❌ Error checking favorite status:", error);
     return false;
   }
 }
 
-export function subscribeToFavorites(userId: string, callback: (favorites: Property[]) => void) {
-  const q = query(
-    collection(db, 'favorites'),
-    where('userId', '==', userId)
-  );
-  return onSnapshot(q, (snapshot) => {
-    try {
-      const favorites: Property[] = snapshot.docs.map(doc => {
-        const data = doc.data() as DocumentData;
-        return data.property as Property;
-      });
-      callback(favorites);
-    } catch (error) {
-      console.error('❌ Error processing favorites:', error);
+export function subscribeToFavorites(
+  userId: string,
+  callback: (favorites: Property[]) => void
+) {
+  const q = query(collection(db, "favorites"), where("userId", "==", userId));
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      try {
+        const favorites: Property[] = snapshot.docs.map((doc) => {
+          const data = doc.data() as DocumentData;
+          return data.property as Property;
+        });
+        callback(favorites);
+      } catch (error) {
+        console.error("❌ Error processing favorites:", error);
+        callback([]);
+      }
+    },
+    (error) => {
+      // Improved error logging for Firestore transport errors
+      console.error(
+        "❌ Firestore subscription error:",
+        error.code,
+        error.message,
+        error
+      );
       callback([]);
     }
-  }, (error) => {
-    // Improved error logging for Firestore transport errors
-    console.error('❌ Firestore subscription error:', error.code, error.message, error);
-    callback([]);
-  });
+  );
 }
 
-  export async function toggleFavorite(userId: string, property: Property): Promise<boolean> {
+export async function toggleFavorite(
+  userId: string,
+  property: Property
+): Promise<boolean> {
   try {
     const isFav = await isFavorite(userId, property.id);
     if (isFav) {
@@ -85,7 +113,7 @@ export function subscribeToFavorites(userId: string, callback: (favorites: Prope
       return await addToFavorites(userId, property);
     }
   } catch (error) {
-    console.error('❌ Error toggling favorite:', error);
+    console.error("❌ Error toggling favorite:", error);
     return false;
   }
-} 
+}

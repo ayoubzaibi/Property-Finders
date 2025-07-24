@@ -218,11 +218,11 @@ export async function fetchProperties(
     return parsePropertiesResponse(data);
   } catch (error: any) {
     devLog("💥 Error fetching properties:", error);
-    return getMockProperties();
+    return [];
   }
 }
 
-export async function searchProperties(
+export  async function searchProperties(
   query: string,
   filters: {
     page?: number;
@@ -234,8 +234,8 @@ export async function searchProperties(
     propertyType?: string;
   } = {}
 ): Promise<Property[]> {
-  return fetchProperties({ ...filters, search: query });
-}
+  return [];
+} 
 
 export async function getPropertyDetails(
   propertyId: string
@@ -271,76 +271,10 @@ export async function getPropertyDetails(
     throw new Error("Unexpected response format from server");
   } catch (error: any) {
     devLog("💥 Error fetching property details:", error);
-    // Fallback to mock data if server fails
-    const mock = getMockProperties().find((p) => p.id === propertyId);
-    return mock || null;
+    return null;
   }
 }
 
-function getMockProperties(): Property[] {
-  return [
-    {
-      id: "1",
-      title: "Modern Downtown Apartment",
-      price: 450000,
-      address: "123 Main St, Downtown",
-      location: "Downtown",
-      bedrooms: 2,
-      bathrooms: 2,
-      propertyType: "Apartment",
-      squareFootage: 1200,
-      yearBuilt: 2020,
-      status: "For Sale",
-      description: "Beautiful modern apartment in the heart of downtown",
-      photos: [
-        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400",
-        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400",
-        "https://images.unsplash.com/photo-1464983953574-0892a716854b?w=400",
-      ],
-      amenities: ["Pool", "Gym", "Parking", "Balcony"],
-    },
-    {
-      id: "2",
-      title: "Family Home in Suburbs",
-      price: 650000,
-      address: "456 Oak Ave, Suburbs",
-      location: "Suburbs",
-      bedrooms: 3,
-      bathrooms: 2,
-      propertyType: "Single Family",
-      squareFootage: 1800,
-      yearBuilt: 2015,
-      status: "For Sale",
-      description: "Spacious family home with large backyard",
-      photos: [
-        "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400",
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400",
-        "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?w=400",
-      ],
-      amenities: ["Garden", "Garage", "Fireplace", "Deck"],
-    },
-    {
-      id: "3",
-      title: "City Center Condo",
-      price: 350000,
-      address: "789 Pine Rd, City Center",
-      location: "City Center",
-      bedrooms: 1,
-      bathrooms: 1,
-      propertyType: "Condo",
-      squareFootage: 800,
-      yearBuilt: 2018,
-      status: "For Sale",
-      description: "Cozy condo perfect for young professionals",
-      photos: [
-        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400",
-        "https://images.unsplash.com/photo-1464983953574-0892a716854b?w=400",
-        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400",
-      ],
-      amenities: ["Doorman", "Gym", "Rooftop", "Storage"],
-    },
-  ];
-}
 
 export async function checkServerStatus(): Promise<{
   running: boolean;

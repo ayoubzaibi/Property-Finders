@@ -1,5 +1,13 @@
-import { AuthError, createUserWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged, signInWithEmailAndPassword, User, UserCredential } from 'firebase/auth';
-import { auth } from '../app/config/firebase';
+import {
+  AuthError,
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  User,
+  UserCredential,
+} from "firebase/auth";
+import { auth } from "../app/config/firebase";
 
 // Types
 export interface AuthErrorType {
@@ -23,14 +31,14 @@ export class AuthService {
   async signIn(email: string, password: string): Promise<AuthResult> {
     try {
       const userCredential: UserCredential = await signInWithEmailAndPassword(
-        this.auth, 
-        email, 
+        this.auth,
+        email,
         password
       );
-      
+
       return {
         success: true,
-        user: userCredential.user
+        user: userCredential.user,
       };
     } catch (error) {
       const authError = error as AuthError;
@@ -38,8 +46,8 @@ export class AuthService {
         success: false,
         error: {
           code: authError.code,
-          message: authError.message
-        }
+          message: authError.message,
+        },
       };
     }
   }
@@ -49,15 +57,12 @@ export class AuthService {
    */
   async signUp(email: string, password: string): Promise<AuthResult> {
     try {
-      const userCredential: UserCredential = await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password
-      );
-      
+      const userCredential: UserCredential =
+        await createUserWithEmailAndPassword(this.auth, email, password);
+
       return {
         success: true,
-        user: userCredential.user
+        user: userCredential.user,
       };
     } catch (error) {
       const authError = error as AuthError;
@@ -65,8 +70,8 @@ export class AuthService {
         success: false,
         error: {
           code: authError.code,
-          message: authError.message
-        }
+          message: authError.message,
+        },
       };
     }
   }
@@ -78,7 +83,7 @@ export class AuthService {
     try {
       await firebaseSignOut(this.auth);
       return {
-        success: true
+        success: true,
       };
     } catch (error) {
       const authError = error as AuthError;
@@ -86,8 +91,8 @@ export class AuthService {
         success: false,
         error: {
           code: authError.code,
-          message: authError.message
-        }
+          message: authError.message,
+        },
       };
     }
   }
@@ -118,9 +123,12 @@ export class AuthService {
 export const authService = new AuthService();
 
 // Export individual functions for convenience
-export const signIn = (email: string, password: string) => authService.signIn(email, password);
-export const signUp = (email: string, password: string) => authService.signUp(email, password);
+export const signIn = (email: string, password: string) =>
+  authService.signIn(email, password);
+export const signUp = (email: string, password: string) =>
+  authService.signUp(email, password);
 export const signOut = () => authService.signOut();
 export const getCurrentUser = () => authService.getCurrentUser();
-export const onAuthStateChange = (callback: (user: User | null) => void) => authService.onAuthStateChange(callback);
-export const isAuthenticated = () => authService.isAuthenticated(); 
+export const onAuthStateChange = (callback: (user: User | null) => void) =>
+  authService.onAuthStateChange(callback);
+export const isAuthenticated = () => authService.isAuthenticated();

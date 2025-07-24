@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useSession } from '../app/context';
-import { addToFavorites, removeFromFavorites, subscribeToFavorites } from '../services/favoritesService';
-import { Property } from '../services/propertyService';
+import { useEffect, useState } from "react";
+import { useSession } from "../app/context";
+import {
+  addToFavorites,
+  removeFromFavorites,
+  subscribeToFavorites,
+} from "../services/favoritesService";
+import { Property } from "../services/propertyService";
 export function useFavorites() {
   const { user } = useSession();
   const [favorites, setFavorites] = useState<Property[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loadingStates, setLoadingStates] = useState<Set<string>>(new Set());
- 
+
   useEffect(() => {
     if (!user?.uid) {
       setFavorites([]);
@@ -15,38 +19,37 @@ export function useFavorites() {
       return;
     }
 
-    console.log('🔄 Setting up favorites subscription for user:', user.uid);
-    
+    console.log("🔄 Setting up favorites subscription for user:", user.uid);
+
     const unsubscribe = subscribeToFavorites(user.uid, (newFavorites) => {
       setFavorites(newFavorites);
-      setFavoriteIds(new Set(newFavorites.map(fav => fav.id)));
+      setFavoriteIds(new Set(newFavorites.map((fav) => fav.id)));
     });
 
     return () => {
-      console.log('🔄 Cleaning up favorites subscription');
+      console.log("🔄 Cleaning up favorites subscription");
       unsubscribe();
     };
   }, [user?.uid]);
 
-  
   const addFavorite = async (property: Property): Promise<boolean> => {
     if (!user?.uid) {
-      console.log('❌ No user logged in, cannot add to favorites');
+      console.log("❌ No user logged in, cannot add to favorites");
       return false;
     }
 
-    setLoadingStates(prev => new Set([...prev, property.id]));
+    setLoadingStates((prev) => new Set([...prev, property.id]));
     try {
       const success = await addToFavorites(user.uid, property);
       if (success) {
-        console.log('✅ Added to favorites successfully');
+        console.log("✅ Added to favorites successfully");
       }
       return success;
     } catch (error) {
-      console.error('❌ Error adding to favorites:', error);
+      console.error("❌ Error adding to favorites:", error);
       return false;
     } finally {
-      setLoadingStates(prev => {
+      setLoadingStates((prev) => {
         const newSet = new Set(prev);
         newSet.delete(property.id);
         return newSet;
@@ -57,22 +60,22 @@ export function useFavorites() {
   // Remove from favorites
   const removeFavorite = async (propertyId: string): Promise<boolean> => {
     if (!user?.uid) {
-      console.log('❌ No user logged in, cannot remove from favorites');
+      console.log("❌ No user logged in, cannot remove from favorites");
       return false;
     }
 
-    setLoadingStates(prev => new Set([...prev, propertyId]));
+    setLoadingStates((prev) => new Set([...prev, propertyId]));
     try {
       const success = await removeFromFavorites(user.uid, propertyId);
       if (success) {
-        console.log('✅ Removed from favorites successfully');
+        console.log("✅ Removed from favorites successfully");
       }
       return success;
     } catch (error) {
-      console.error('❌ Error removing from favorites:', error);
+      console.error("❌ Error removing from favorites:", error);
       return false;
     } finally {
-      setLoadingStates(prev => {
+      setLoadingStates((prev) => {
         const newSet = new Set(prev);
         newSet.delete(propertyId);
         return newSet;
@@ -83,11 +86,11 @@ export function useFavorites() {
   // Toggle favorite
   const toggleFavorite = async (property: Property): Promise<boolean> => {
     if (!user?.uid) {
-      console.log('❌ No user logged in, cannot toggle favorite');
+      console.log("❌ No user logged in, cannot toggle favorite");
       return false;
     }
 
-    setLoadingStates(prev => new Set([...prev, property.id]));
+    setLoadingStates((prev) => new Set([...prev, property.id]));
     const isFav = favoriteIds.has(property.id);
 
     try {
@@ -97,10 +100,10 @@ export function useFavorites() {
         return await addFavorite(property);
       }
     } catch (error) {
-      console.error('❌ Error toggling favorite:', error);
+      console.error("❌ Error toggling favorite:", error);
       return false;
     } finally {
-      setLoadingStates(prev => {
+      setLoadingStates((prev) => {
         const newSet = new Set(prev);
         newSet.delete(property.id);
         return newSet;
@@ -108,7 +111,6 @@ export function useFavorites() {
     }
   };
 
- 
   const checkIsFavorite = (propertyId: string): boolean => {
     return favoriteIds.has(propertyId);
   };
@@ -128,4 +130,4 @@ export function useFavorites() {
     checkIsFavorite,
     isLoading,
   };
-} 
+}

@@ -161,7 +161,7 @@ export default function DetailsInfo({
           ))}
         </View>
       )}
-      {/* Map (uncomment if react-native-maps is installed) */}
+
 
       {property.coordinates &&
         property.coordinates.latitude &&
