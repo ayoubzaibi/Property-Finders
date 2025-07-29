@@ -5,7 +5,6 @@ import AgentInfoSection from "./AgentInfoSection";
 import AmenitiesChips from "./AmenitiesChips";
 import DescriptionSection from "./DescriptionSection";
 import ImageGallery from "./ImageGallery";
-import MapSection from "./MapSection";
 import PropertyDetailsGrid from "./PropertyDetailsGrid";
 
 
@@ -64,20 +63,15 @@ export default function DetailsInfo({
         <Text style={styles.address}>{property.address}</Text>
       </View>
       <AmenitiesChips amenities={property.amenities} />
-      <MapSection
-        coordinates={property.coordinates}
-        title={property.title}
-        address={property.address}
-      />
       <View style={styles.detailsSection}>
         <Text style={styles.sectionTitle}>Property Details</Text>
         <PropertyDetailsGrid property={property} />
       </View>
       <DescriptionSection description={property.description} />
       <AgentInfoSection
-        agentName={property.agentName}
-        agentPhone={property.agentPhone}
-        agentEmail={property.agentEmail}
+        agentName={property.agentName || ''}
+        agentPhone={property.agentPhone || ''}
+        agentEmail={property.agentEmail || ''}
         openPhone={openPhone}
         openEmail={openEmail}
       />
@@ -93,15 +87,15 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginBottom: 8,
   },
-  price: { fontSize: 20, fontWeight: "700", color: "#764ba2", marginBottom: 6 },
+  price: { fontSize: 20, fontWeight: "700", color: "#a2cbe8ff", marginBottom: 6 },
   title: { fontSize: 18, fontWeight: "bold", color: "#222", marginBottom: 4 },
   addressRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
-  address: { fontSize: 14, color: "#444", fontWeight: "500" },
+  address: { fontSize: 14, color: "#a2cbe8ff", fontWeight: "500" },
   detailsSection: { marginTop: 12 },
   sectionTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#764ba2",
+    color: "#222",
     marginBottom: 8,
   },
 });

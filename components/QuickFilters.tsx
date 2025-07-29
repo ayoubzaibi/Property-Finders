@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+              import { Ionicons } from "@expo/vector-icons";
 import {
   ScrollView,
   StyleSheet,
@@ -148,7 +148,7 @@ export default function QuickFilters({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "linear-gradient(90deg, #181A20 0%, #23243a 100%)",
+    backgroundColor: "#181A20",
     paddingVertical: 16,
     marginHorizontal: 16,
     marginTop: 8,
@@ -231,6 +231,19 @@ const styles = StyleSheet.create({
   chipIcon: {
     marginRight: 2,
   },
+  locationInput: {
+    backgroundColor: '#23243a',
+    color: '#fff',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    fontSize: 14,
+    minWidth: 120,
+    marginTop: 4,
+    marginBottom: 8,
+    borderWidth: 1.5,
+    borderColor: '#23243a',
+  },
   clearButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -253,5 +266,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginLeft: 2,
     letterSpacing: 0.5,
-  },
+  }
 });
+

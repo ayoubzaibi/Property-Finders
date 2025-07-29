@@ -26,7 +26,7 @@ export default function DetailsHeader({
         <Ionicons
           name={isFavorite ? "heart" : "heart-outline"}
           size={24}
-          color={isFavorite ? "#ff4757" : "#fff"}
+          color={isFavorite ? "#f3182aff" : "#fff"}
         />
       </TouchableOpacity>
     </View>

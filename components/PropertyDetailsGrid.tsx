@@ -1,5 +1,4 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 type Property = {
   bedrooms?: number;
@@ -78,7 +77,7 @@ const styles = StyleSheet.create({
   gridContainer: {
     marginTop: 16,
     marginBottom: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#fcfdf5ff",
     borderRadius: 8,
     padding: 16,
     elevation: 1,

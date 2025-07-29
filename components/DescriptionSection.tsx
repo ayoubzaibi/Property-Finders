@@ -21,8 +21,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#764ba2",
+    color: "#a2cbe8ff",
     marginBottom: 8,
   },
-  description: { fontSize: 14, color: "#666", lineHeight: 20 },
+  description: { fontSize: 14, color: "#fff", lineHeight: 20 },
 });

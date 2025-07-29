@@ -3,12 +3,12 @@ import QuickFilters from "@/components/QuickFilters";
 import SearchFilters from "@/components/SearchFilters";
 import SearchHeader from "@/components/SearchHeader";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text } from "react-native";
 import Colors from "../../constants/Colors";
+import { useDebounce } from "../../hooks/useDebounce";
 import { useFavorites } from "../../hooks/useFavorites";
 import { useProperties } from "../../hooks/useProperties";
-import { useDebounce } from "../../hooks/useDebounce";
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
@@ -22,6 +22,7 @@ export default function SearchScreen() {
     propertyType: "",
     squareFootage: "",
     yearBuilt: "",
+    location: "",
   });
   const {
     properties: results,
@@ -68,6 +69,7 @@ export default function SearchScreen() {
               propertyType: "",
               squareFootage: "",
               yearBuilt: "",
+              location: "",
             })
           }
         />
@@ -87,6 +89,7 @@ export default function SearchScreen() {
             propertyType: "",
             minPrice: "",
             maxPrice: "",
+            location: "",
           }))
         }
       />

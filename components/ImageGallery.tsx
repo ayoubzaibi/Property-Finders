@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ccc",
     marginHorizontal: 4,
   },
-  dotActive: { backgroundColor: "#764ba2" },
+  dotActive: { backgroundColor: "#a2cbe8ff" },
   modalBackground: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.95)",

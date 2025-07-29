@@ -10,19 +10,30 @@ interface AgentInfoSectionProps {
 }
 
 export default function AgentInfoSection({
-  agentName,
-  agentPhone,
-  agentEmail,
+  agentName = 'zaibi Aberafie',
+  agentPhone = '',
+  agentEmail = '',
   openPhone,
   openEmail,
 }: AgentInfoSectionProps) {
-  if (!agentName && !agentPhone && !agentEmail) return null;
   return (
     <View style={styles.agentSection}>
       <Text style={styles.sectionTitle}>Agent Information</Text>
-      {agentName && <Text style={styles.agentText}>Name: {agentName}</Text>}
-      {agentPhone && <Text style={styles.agentText}>Phone: {agentPhone}</Text>}
-      {agentEmail && <Text style={styles.agentText}>Email: {agentEmail}</Text>}
+      {agentName ? (
+        <Text style={styles.agentText}>Name: {agentName}</Text>
+      ) : (
+        <Text style={styles.agentText}>Name: Zaibi Aberafie</Text>
+      )}
+      {agentPhone ? (
+        <Text style={styles.agentText}>Phone: {agentPhone}</Text>
+      ) : (
+        <Text style={styles.agentText}>Phone: 99 45 45 05</Text>
+      )}
+      {agentEmail ? (
+        <Text style={styles.agentText}>Email: {agentEmail}</Text>
+      ) : (
+        <Text style={styles.agentText}>Email: zaibi.abderafie@gmail.com</Text>
+      )}
       <View style={styles.agentButtons}>
         {agentPhone && (
           <TouchableOpacity
@@ -32,7 +43,6 @@ export default function AgentInfoSection({
             accessibilityRole="button"
           >
             <Ionicons name="call" size={20} color="#fff" />
-            <Text style={styles.contactBtnText}>Call</Text>
           </TouchableOpacity>
         )}
         {agentEmail && (
@@ -43,7 +53,6 @@ export default function AgentInfoSection({
             accessibilityRole="button"
           >
             <Ionicons name="mail" size={20} color="#fff" />
-            <Text style={styles.contactBtnText}>Email</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -61,7 +70,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#764ba2",
+    color: "#a2cbe8ff",
     marginBottom: 8,
   },
   agentText: { fontSize: 14, color: "#444", marginBottom: 4 },
@@ -69,7 +78,7 @@ const styles = StyleSheet.create({
   contactBtn: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#764ba2",
+    backgroundColor: "#a2cbe8ff",
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
