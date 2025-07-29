@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import HomeHeader from "@/components/HomeHeader";
 
 import PropertyCard from "@/components/PropertyCard";

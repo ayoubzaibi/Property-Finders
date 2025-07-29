@@ -21,7 +21,7 @@ export default function HomeHeader({
         size={36}
         color="#fff"
         style={styles.headerAvatar}
-        onPress={() => router.push("/(auth)/Welcome")}
+        onPress={() => router.push("/(tabs)/Profile")}
       />
     </View>
   );

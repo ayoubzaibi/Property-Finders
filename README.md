@@ -111,7 +111,13 @@ Property-Finders/
 │   ├── context.tsx        # App context
 │   └── useStorageState.tsx# Storage hook
 ├── components/             # Reusable components
-│   ├── DetailsInfo.tsx
+│   ├── DetailsInfo.tsx         # Property details main component (now uses subcomponents)
+│   ├── ImageGallery.tsx        # Image gallery and modal for property photos
+│   ├── AmenitiesChips.tsx      # Renders property amenities as chips
+│   ├── MapSection.tsx          # Shows property location on a map
+│   ├── PropertyDetailsGrid.tsx # Grid of property details (bedrooms, baths, etc.)
+│   ├── AgentInfoSection.tsx    # Agent info and contact buttons
+│   ├── DescriptionSection.tsx  # Property description section
 │   ├── DetailsHeader.tsx
 │   ├── PropertyCard.tsx
 │   ├── PropertyListItem.tsx
@@ -139,6 +145,8 @@ Property-Finders/
 │   ├── useThemeColor.ts
 │   ├── useProperties.ts
 │   └── useFavorites.tsx
+│   ├── useDebounce.ts          # Debounces a value (e.g., for search input)
+│   ├── useNetworkStatus.ts     # Returns online/offline status
 ├── constants/              # App-wide constants
 │   └── Colors.ts
 ├── assets/                 # Images and fonts
@@ -250,3 +258,29 @@ If you encounter any issues or have questions:
 ---
 
 **Happy Property Hunting! 🏠✨**
+
+## 🆕 Recent Improvements
+
+- **DetailsInfo** refactored into smaller subcomponents for maintainability and reusability:
+  - `ImageGallery`, `AmenitiesChips`, `MapSection`, `PropertyDetailsGrid`, `AgentInfoSection`, `DescriptionSection`
+- **New custom hooks:**
+  - `useDebounce` for debounced input (e.g., search)
+  - `useNetworkStatus` for online/offline detection
+
+## 🧩 How to Use the New Hooks
+
+### useDebounce
+
+Debounce a value (e.g., search input):
+
+```tsx
+const debouncedQuery = useDebounce(query, 500);
+```
+
+### useNetworkStatus
+
+Detect if the device is online:
+
+```tsx
+const isOnline = useNetworkStatus();
+```

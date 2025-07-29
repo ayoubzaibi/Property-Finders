@@ -3,14 +3,16 @@ import QuickFilters from "@/components/QuickFilters";
 import SearchFilters from "@/components/SearchFilters";
 import SearchHeader from "@/components/SearchHeader";
 import { LinearGradient } from "expo-linear-gradient";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FlatList, StyleSheet, Text } from "react-native";
 import Colors from "../../constants/Colors";
 import { useFavorites } from "../../hooks/useFavorites";
 import { useProperties } from "../../hooks/useProperties";
+import { useDebounce } from "../../hooks/useDebounce";
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 500); // Debounce search input
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     minPrice: "",
@@ -27,6 +29,14 @@ export default function SearchScreen() {
     clearError,
   } = useProperties({ autoLoad: false });
   const { toggleFavorite, checkIsFavorite, isLoading } = useFavorites();
+
+  // Only search when debouncedQuery changes
+  useEffect(() => {
+    if (debouncedQuery.trim()) {
+      clearError();
+      searchProperties(debouncedQuery, filters);
+    }
+  }, [clearError, debouncedQuery, filters, searchProperties]);
 
   const handleSearch = async () => {
     if (!query.trim()) return;

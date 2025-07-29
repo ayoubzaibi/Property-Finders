@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Colors from "../../constants/Colors";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus";
 import { useSession } from "../context";
 
 export default function ProfileScreen() {
@@ -19,7 +20,7 @@ export default function ProfileScreen() {
       },
     ]);
   };
-
+  const isOnline = useNetworkStatus(); // Show online/offline status
   return (
     <LinearGradient
       colors={[Colors.background, Colors.card]}
@@ -27,6 +28,17 @@ export default function ProfileScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
+      {/* Show network status */}
+      <View style={{ alignItems: "center", marginTop: 10 }}>
+        <Text
+          style={{
+            color: isOnline ? Colors.accent : "red",
+            fontWeight: "bold",
+          }}
+        >
+          {isOnline ? "You are online" : "You are offline"}
+        </Text>
+      </View>
       <UserHeader title="Profile" subtitle="Your account info" />
       <View style={styles.card}>
         <View style={styles.avatarContainer}>

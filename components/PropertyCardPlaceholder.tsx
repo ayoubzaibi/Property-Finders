@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import Colors from "../constants/Colors";
@@ -22,9 +21,6 @@ export default function PropertyCardPlaceholder() {
           <Text style={styles.headerTitle}>Discover Properties</Text>
           <Text style={styles.headerSubtitle}>Find your dream home today</Text>
         </View>
-        <TouchableOpacity style={styles.testButton}>
-          <Ionicons name="bug-outline" size={24} color={Colors.accent} />
-        </TouchableOpacity>
         <Ionicons
           name="person-circle"
           size={36}
