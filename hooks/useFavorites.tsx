@@ -22,6 +22,7 @@ export function useFavorites() {
     console.log("🔄 Setting up favorites subscription for user:", user.uid);
 
     const unsubscribe = subscribeToFavorites(user.uid, (newFavorites) => {
+      console.log("[Favorites] Fetched from Firestore:", newFavorites);
       setFavorites(newFavorites);
       setFavoriteIds(new Set(newFavorites.map((fav) => fav.id)));
     });

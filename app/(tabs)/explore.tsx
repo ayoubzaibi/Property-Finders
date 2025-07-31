@@ -22,7 +22,7 @@ export default function ExploreScreen() {
   const loadProperties = () => {
     setLoading(true);
     setError(null);
-    fetchProperties({ limit: 10 })
+    fetchProperties({ limit: 2 })
       .then(setProperties)
       .catch(() => setError("Failed to load properties"))
       .finally(() => setLoading(false));
@@ -31,7 +31,6 @@ export default function ExploreScreen() {
   useEffect(() => {
     loadProperties();
   }, []);
-
   if (loading) {
     return (
       <LinearGradient

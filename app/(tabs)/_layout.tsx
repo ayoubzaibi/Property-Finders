@@ -7,7 +7,7 @@ const TAB_ICONS: Record<string, string> = {
   search: "search",
   Favorites: "heart",
   Profile: "person",
-  explore: "compass", // Added for Explore tab
+  explore: "compass", 
 };
 
 export default function TabLayout() {

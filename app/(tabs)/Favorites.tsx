@@ -7,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
+
 import Colors from "../../constants/Colors";
 import { useFavorites } from "../../hooks/useFavorites";
 import { Property } from "../../services/propertyService";
@@ -19,34 +20,34 @@ export default function FavoritesScreen() {
     useFavorites();
   const [loading, setLoading] = useState(true);
 
+  // Set loading to false when favorites are loaded
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
+    if (favorites) setLoading(false);
+  }, [favorites]);
 
   const handleFavoritePress = async (property: Property) => {
     try {
+      const wasFavorite = checkIsFavorite(property.id);
       const success = await toggleFavorite(property);
       if (success) {
         Alert.alert(
-          "Removed from Favorites",
-          "Property has been removed from your favorites.",
+          wasFavorite ? "Removed from Favorites" : "Added to Favorites",
+          wasFavorite
+            ? "Property has been removed from your favorites."
+            : "Property has been added to your favorites.",
           [{ text: "OK" }]
         );
       } else {
         Alert.alert(
           "Error",
-          "Failed to remove from favorites. Please try again."
+          "Failed to update favorites. Please try again."
         );
       }
     } catch (error) {
-      console.error("Error removing favorite:", error);
+      console.error("Error toggling favorite:", error);
       Alert.alert(
         "Error",
-        "Failed to remove from favorites. Please try again."
+        "Failed to update favorites. Please try again."
       );
     }
   };

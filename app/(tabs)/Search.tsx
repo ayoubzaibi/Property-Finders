@@ -12,7 +12,7 @@ import { useProperties } from "../../hooks/useProperties";
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
-  const debouncedQuery = useDebounce(query, 500); // Debounce search input
+  const debouncedQuery = useDebounce(query, 500); 
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     minPrice: "",
@@ -31,7 +31,7 @@ export default function SearchScreen() {
   } = useProperties({ autoLoad: false });
   const { toggleFavorite, checkIsFavorite, isLoading } = useFavorites();
 
-  // Only search when debouncedQuery changes
+
   useEffect(() => {
     if (debouncedQuery.trim()) {
       clearError();

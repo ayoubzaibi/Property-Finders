@@ -16,6 +16,7 @@ export async function addToFavorites(
   property: Property
 ): Promise<boolean> {
   try {
+    console.log("***************Adding to favorites:", property.id);
     await addDoc(collection(db, "favorites"), {
       userId,
       propertyId: property.id,

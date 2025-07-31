@@ -208,6 +208,8 @@ export async function fetchProperties(
       queryParams.append("propertyType", params.propertyType);
     if (params.search) queryParams.append("search", params.search);
     const url = `${API_BASE_URL}?${queryParams.toString()}`;
+    console.log("Fetching properties from:", url);
+    devLog("Fetching properties with params:", params);
     const response = await fetchWithTimeout(
       url,
       { method: "GET", headers: { Accept: "application/json" } },

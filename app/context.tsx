@@ -46,11 +46,12 @@ export default function SessionProvider({ children }: PropsWithChildren) {
     return () => unsubscribe();
   }, []);
 
+
   const signIn = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setLoading(false);
-      router.push("/(tabs)/Home");
+      router.push("/(tabs)/Home"); 
     } catch (error) {
       console.error("Sign in error:", error);
       throw error;
@@ -60,7 +61,7 @@ export default function SessionProvider({ children }: PropsWithChildren) {
   const signOut = () => {
     firebaseSignOut(auth);
     setUser(null);
-    router.push("/(auth)/Welcome");
+    router.push("/(auth)/Welcome"); 
     setLoading(false);
   };
 
